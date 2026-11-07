@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مرآة الغذاء الصحي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&family=Readex+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: the live camera fills the screen; sticker-like cards sit on top, big enough to read from the back of the class. */
+:root{
+  --ink:#2B1A0F;        /* date-brown outline and text */
+  --paper:#FFFDF6;      /* sticker paper */
+  --leaf:#1F8F55;       /* healthy */
+  --leaf-soft:#D9F2E2;
+  --pom:#D63A3A;        /* not healthy */
+  --pom-soft:#FBE0DD;
+  --saffron:#F4B33F;    /* accent */
+  --sky:#BFE6F5;
+  --muted:#6E5A4B;
+  --font-display:"Baloo Bhaijaan 2","Segoe UI",Tahoma,Arial,sans-serif;
+  --font-body:"Readex Pro","Segoe UI",Tahoma,Arial,sans-serif;
+  --r:22px;
+  --lift:6px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:#1d1611;color:var(--ink);font-family:var(--font-body)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible{outline:4px solid var(--saffron);outline-offset:3px}
+[hidden]{display:none!important}
+
+/* ---------- stage ---------- */
+#bg{position:fixed;inset:0;background:
+  radial-gradient(120% 80% at 50% 0%,#FFF4D9 0%,#F9E3B8 45%,#EBC98F 100%)}
+#bg::after{content:"";position:absolute;inset:auto 0 0 0;height:32%;
+  background:repeating-linear-gradient(90deg,#D9A866 0 60px,#CF9C5A 60px 120px);opacity:.55}
+#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s}
+body.has-cam #cam{opacity:1}
+body.mirror #cam{transform:scaleX(-1)}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#ui{position:fixed;inset:0;pointer-events:none}
+#ui > *{pointer-events:auto}
+#tags,#ring,#bubble,#count,#faceHint{pointer-events:none!important}
+
+/* ---------- sticker language ---------- */
+.sticker{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r);box-shadow:0 var(--lift) 0 var(--ink)}
+.btn{border:3px solid var(--ink);border-radius:18px;background:var(--paper);box-shadow:0 5px 0 var(--ink);
+  font-family:var(--font-display);font-weight:800;font-size:clamp(20px,3vmin,34px);line-height:1.1;
+  padding:.45em 1em .55em;display:inline-flex;align-items:center;justify-content:center;gap:.4em;
+  transition:transform .08s,box-shadow .08s;user-select:none;-webkit-user-select:none}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn[disabled]{opacity:.6;cursor:wait}
+.btn svg{width:1.3em;height:1.3em;flex:none}
+.btn-main{background:var(--saffron)}
+.btn-good{background:var(--leaf);color:#fff}
+.btn-bad{background:var(--pom);color:#fff}
+.btn.big{font-size:clamp(24px,3.8vmin,44px)}
+.btn-link{background:none;border:0;font-family:var(--font-body);font-weight:500;font-size:clamp(15px,2vmin,22px);
+  text-decoration:underline;text-underline-offset:4px;color:var(--muted);padding:.4em}
+
+/* ---------- top bar ---------- */
+#brand{position:absolute;top:max(16px,2.2vmin);inset-inline-start:max(16px,2.2vmin);padding:.35em .9em .45em;
+  display:flex;flex-direction:column;gap:0;transform:rotate(-1.5deg)}
+#brand b{font-family:var(--font-display);font-weight:800;font-size:clamp(20px,3.2vmin,40px);line-height:1.15}
+#brand span{font-size:clamp(12px,1.6vmin,18px);color:var(--muted)}
+#tools{position:absolute;top:max(16px,2.2vmin);inset-inline-end:max(16px,2.2vmin);display:flex;gap:12px}
+.icon-btn{width:clamp(48px,7vmin,76px);height:clamp(48px,7vmin,76px);padding:0;border:3px solid var(--ink);border-radius:50%;
+  background:var(--paper);box-shadow:0 5px 0 var(--ink);display:grid;place-items:center}
+.icon-btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.icon-btn svg{width:52%;height:52%}
+.icon-btn[aria-pressed="false"] .on,.icon-btn[aria-pressed="true"] .off{display:none}
+
+/* ---------- mode switch ---------- */
+#modes{position:absolute;bottom:max(18px,2.6vmin);left:50%;transform:translateX(-50%);display:flex;padding:6px;gap:6px;border-radius:999px}
+#modes button{border:0;background:transparent;border-radius:999px;padding:.35em 1.1em .45em;
+  font-family:var(--font-display);font-weight:700;font-size:clamp(18px,2.8vmin,32px);white-space:nowrap}
+#modes button.on{background:var(--ink);color:var(--paper)}
+#modes button[aria-disabled="true"]{opacity:.45}
+
+/* ---------- intro mode ---------- */
+#introHud{position:absolute;top:max(16px,2.2vmin);left:50%;transform:translateX(-50%);padding:.35em 1.1em .5em;text-align:center;
+  display:flex;flex-direction:column;align-items:center}
+#introHud b{font-family:var(--font-display);font-weight:800;font-size:clamp(18px,2.9vmin,34px);line-height:1.2}
+#introHud span{font-size:clamp(12px,1.7vmin,19px);color:var(--muted)}
+#introHud.all{background:var(--leaf);color:#fff}
+#introHud.all span{color:#E6F7EC}
+#tags{position:absolute;inset:0;overflow:hidden}
+.tag{position:absolute;left:0;top:0;transform:translate(-50%,0);white-space:nowrap;
+  font-family:var(--font-display);font-weight:700;font-size:clamp(14px,2.3vmin,30px);line-height:1;
+  padding:.25em .6em .35em;border:2.5px solid var(--ink);border-radius:999px;background:var(--paper);box-shadow:0 3px 0 var(--ink);
+  transition:opacity .25s}
+.tag.done{background:var(--leaf-soft)}
+.tag.done::before{content:"✓ ";color:var(--leaf)}
+.tag.bad.done{background:var(--pom-soft)}
+.tag.bad.done::before{color:var(--pom)}
+.tag.fly{background:var(--saffron)}
+
+.card{position:absolute;left:50%;transform:translateX(-50%);width:min(92vw,880px);padding:clamp(16px,2.6vmin,32px) clamp(18px,3.4vmin,44px)}
+#focusCard{bottom:calc(max(18px,2.6vmin) + clamp(56px,7.6vmin,84px) + 18px);text-align:center;display:flex;flex-direction:column;gap:clamp(8px,1.4vmin,16px)}
+.fc-name{font-family:var(--font-display);font-weight:800;font-size:clamp(40px,8vmin,104px);line-height:1}
+.fc-q{margin:0;font-size:clamp(18px,2.8vmin,32px);font-weight:500}
+.fc-actions{display:flex;gap:clamp(12px,2vmin,24px);justify-content:center;flex-wrap:wrap}
+.fc-actions .btn{min-width:min(40%,280px)}
+.fc-res{display:flex;align-items:center;gap:clamp(12px,2.4vmin,28px);text-align:start}
+.fc-res .face{width:clamp(72px,12vmin,140px);height:clamp(72px,12vmin,140px);flex:none}
+.fc-head{margin:0;font-family:var(--font-display);font-weight:800;font-size:clamp(28px,5vmin,60px);line-height:1.1}
+.fc-line{margin:.15em 0 0;font-family:var(--font-display);font-weight:700;font-size:clamp(20px,3.2vmin,38px)}
+.fc-why{margin:.2em 0 0;font-size:clamp(16px,2.3vmin,26px);color:var(--muted)}
+.fc-res.good .fc-line{color:var(--leaf)}
+.fc-res.bad .fc-line{color:var(--pom)}
+
+/* ---------- mouth mode ---------- */
+#energy{position:absolute;top:max(16px,2.2vmin);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:clamp(8px,1.4vmin,16px);
+  padding:.4em .9em .5em;width:min(56vw,720px)}
+#energy .lbl{font-family:var(--font-display);font-weight:800;font-size:clamp(16px,2.4vmin,28px);white-space:nowrap}
+#energy .num{font-family:var(--font-display);font-weight:800;font-size:clamp(16px,2.4vmin,28px);white-space:nowrap;font-variant-numeric:tabular-nums}
+#bar{flex:1;display:flex;gap:4px;height:clamp(18px,3vmin,34px);min-width:0}
+#bar i{flex:1;border:2.5px solid var(--ink);border-radius:8px;background:#EFE6D8;transition:background .3s,transform .3s}
+#bar i.on{background:var(--leaf);transform:scaleY(1.12)}
+#rules{position:absolute;top:calc(max(16px,2.2vmin) + clamp(70px,10vmin,110px));inset-inline-start:max(16px,2.2vmin);
+  padding:.6em .8em;display:flex;flex-direction:column;gap:.5em;transform:rotate(1deg)}
+.rule{display:flex;align-items:center;gap:.5em;font-family:var(--font-display);font-weight:700;font-size:clamp(15px,2.2vmin,26px);white-space:nowrap}
+.rule svg{width:clamp(34px,5vmin,56px);height:clamp(34px,5vmin,56px);flex:none}
+.rule.good b{color:var(--leaf)}
+.rule.bad b{color:var(--pom)}
+#ring{position:absolute;left:0;top:0;border:4px solid #fff;border-radius:50%;transform:translate(-50%,-50%);
+  box-shadow:0 0 0 3px rgba(43,26,15,.55);transition:border-color .12s,background-color .12s}
+#ring.open{border-color:#5BE08F;background:rgba(91,224,143,.18)}
+#faceHint{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);padding:.45em 1.1em .55em;
+  font-family:var(--font-display);font-weight:800;font-size:clamp(24px,4.4vmin,54px);white-space:nowrap;
+  animation:breathe 1.6s ease-in-out infinite}
+@keyframes breathe{50%{transform:translate(-50%,-50%) scale(1.05)}}
+#count{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-family:var(--font-display);font-weight:800;
+  font-size:clamp(120px,30vmin,340px);line-height:1;color:var(--saffron);-webkit-text-stroke:6px var(--ink);paint-order:stroke fill;
+  text-shadow:0 10px 0 var(--ink)}
+#count.pop{animation:pop .7s ease-out}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}30%{transform:translate(-50%,-50%) scale(1.15);opacity:1}100%{transform:translate(-50%,-50%) scale(1)}}
+#bubble{position:absolute;left:0;top:0;transform:translate(-50%,-100%);padding:.3em .9em .4em;white-space:nowrap;
+  font-family:var(--font-display);font-weight:800;font-size:clamp(24px,4.6vmin,58px);line-height:1.1;
+  border:3px solid var(--ink);border-radius:999px;box-shadow:0 5px 0 var(--ink);background:var(--paper)}
+#bubble.good{background:var(--leaf);color:#fff}
+#bubble.bad{background:var(--pom);color:#fff}
+#bubble.meh{background:var(--saffron)}
+#bubble.show{animation:bub .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bub{0%{transform:translate(-50%,-100%) scale(.3)}100%{transform:translate(-50%,-100%) scale(1)}}
+#mouthCard,#endCard{top:50%;transform:translate(-50%,-50%);text-align:center;display:flex;flex-direction:column;align-items:center;gap:clamp(10px,1.8vmin,20px);width:min(92vw,760px)}
+#mouthCard h2,#endCard h2{margin:0;font-family:var(--font-display);font-weight:800;font-size:clamp(34px,6.4vmin,80px);line-height:1.05}
+#mouthCard p,#endCard p{margin:0;font-size:clamp(17px,2.6vmin,30px)}
+.rules-big{display:flex;flex-direction:column;gap:.5em;margin:0;padding:0;list-style:none}
+.rules-big li{display:flex;align-items:center;gap:.5em;font-family:var(--font-display);font-weight:700;font-size:clamp(20px,3.2vmin,38px)}
+.rules-big svg{width:clamp(44px,7vmin,80px);height:clamp(44px,7vmin,80px);flex:none}
+.rules-big .good b{color:var(--leaf)}
+.rules-big .bad b{color:var(--pom)}
+.stars{display:flex;gap:.2em;font-size:clamp(56px,11vmin,130px);line-height:1}
+.stars span{color:#E7DCCB;-webkit-text-stroke:3px var(--ink)}
+.stars span.on{color:var(--saffron)}
+.end-stats{display:flex;gap:clamp(10px,2vmin,24px);flex-wrap:wrap;justify-content:center}
+.end-stats div{border:2.5px solid var(--ink);border-radius:16px;padding:.3em .8em .4em;font-family:var(--font-display);font-weight:700;font-size:clamp(16px,2.4vmin,28px)}
+.end-stats .g{background:var(--leaf-soft)}
+.end-stats .r{background:var(--pom-soft)}
+
+/* ---------- start screen ---------- */
+#start{position:fixed;inset:0;display:flex;overflow-y:auto;-webkit-overflow-scrolling:touch;background:rgba(43,26,15,.38);padding:16px;z-index:5}
+.start-card{margin:auto;width:min(92vw,820px);padding:clamp(22px,4vmin,52px);text-align:center;display:flex;flex-direction:column;align-items:center;gap:clamp(10px,1.8vmin,20px)}
+@media (max-width:520px),(max-height:620px){
+  .start-card{padding:20px 18px;gap:10px}
+  .start-card h1{font-size:clamp(38px,11vw,64px)}
+  .lead{font-size:17px}
+  .start-card .btn.big{font-size:22px}
+}
+.eyebrow{margin:0;font-size:clamp(13px,1.8vmin,20px);letter-spacing:.02em;color:var(--muted);font-weight:600}
+.start-card h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:clamp(44px,9vmin,120px);line-height:1;text-wrap:balance}
+.start-card h1 em{font-style:normal;color:var(--leaf)}
+.lead{margin:0;font-size:clamp(17px,2.6vmin,30px);max-width:30ch;text-wrap:balance}
+.privacy{margin:0;display:flex;align-items:center;gap:.5em;font-size:clamp(13px,1.7vmin,19px);color:var(--muted);max-width:52ch;text-align:start}
+.privacy svg{width:1.4em;height:1.4em;flex:none}
+.err{margin:0;padding:.6em .9em;border:2.5px solid var(--pom);border-radius:14px;background:var(--pom-soft);font-size:clamp(15px,2vmin,22px);max-width:52ch}
+
+/* ---------- settings + toast ---------- */
+#settings{position:absolute;top:calc(max(16px,2.2vmin) + clamp(48px,7vmin,76px) + 16px);inset-inline-end:max(16px,2.2vmin);
+  width:min(88vw,380px);padding:18px;display:flex;flex-direction:column;gap:14px;font-size:clamp(15px,1.9vmin,19px)}
+#settings h3{margin:0;font-family:var(--font-display);font-weight:800;font-size:1.35em}
+#settings label{display:flex;flex-direction:column;gap:6px;font-weight:600}
+#settings select{font:inherit;padding:.5em;border:2.5px solid var(--ink);border-radius:12px;background:#fff}
+.seg{display:flex;border:2.5px solid var(--ink);border-radius:12px;overflow:hidden}
+.seg button{flex:1;border:0;background:#fff;padding:.5em;font-weight:600}
+.seg button+button{border-inline-start:2.5px solid var(--ink)}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.check{flex-direction:row!important;align-items:center}
+.check input{width:22px;height:22px;accent-color:var(--leaf)}
+.hint{margin:0;color:var(--muted);font-size:.88em;font-weight:400}
+#toast{position:absolute;bottom:calc(max(18px,2.6vmin) + clamp(56px,7.6vmin,84px) + 18px);left:50%;transform:translateX(-50%);
+  width:min(92vw,720px);padding:.7em 1em;text-align:center;font-size:clamp(15px,2vmin,22px);background:var(--pom-soft);border-color:var(--pom)}
+#simNote{position:absolute;bottom:max(18px,2.6vmin);inset-inline-start:max(16px,2.2vmin);padding:.4em .8em;font-size:clamp(12px,1.6vmin,16px);max-width:260px}
+
+@media (max-width:640px){
+  #brand{display:none}
+  #introHud span{display:none}
+  #introHud,#energy{top:calc(max(16px,2.2vmin) + 48px + 14px)}
+  #introHud{white-space:nowrap}
+  #energy{width:calc(100vw - 32px)}
+  #rules{display:none}
+  #energy .lbl{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  #faceHint,#count.pop,#bubble.show{animation:none}
+}
+</style>
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+</head>
+<body class="mirror">
+
+<div id="bg"></div>
+<video id="cam" playsinline muted></video>
+<canvas id="scene"></canvas>
+
+<div id="ui">
+  <div id="tags"></div>
+  <div id="ring" hidden></div>
+  <div id="bubble" hidden></div>
+
+  <div id="brand" class="sticker"><b>مرآة الغذاء الصحي</b><span>العلوم · الصف الأول</span></div>
+
+  <div id="tools">
+    <button class="icon-btn" id="btnSound" aria-pressed="true" aria-label="الصوت" title="الصوت">
+      <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+      <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>
+    </button>
+    <button class="icon-btn" id="btnFull" aria-label="ملء الشاشة" title="ملء الشاشة">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+    </button>
+    <button class="icon-btn" id="btnSettings" aria-label="الإعدادات" title="الإعدادات" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+    </button>
+  </div>
+
+  <div id="settings" class="sticker" hidden>
+    <h3>الإعدادات</h3>
+    <label for="camSel">الكاميرا
+      <select id="camSel"><option value="">الكاميرا الافتراضية</option></select>
+    </label>
+    <div>
+      <label style="margin-bottom:6px">سرعة الأطعمة في «افتح فمك»</label>
+      <div class="seg" id="speedSeg">
+        <button data-speed="slow">بطيئة</button><button data-speed="normal" class="on">عادية</button><button data-speed="fast">سريعة</button>
+      </div>
+    </div>
+    <label class="check"><input type="checkbox" id="mirrorChk" checked> عرض الصورة كالمرآة</label>
+    <p class="hint" id="modelsInfo">المجسّمات الحالية مؤقتة.</p>
+    <p class="hint">الصورة تُعالَج داخل المتصفح على هذا الجهاز فقط.</p>
+  </div>
+
+  <!-- intro mode -->
+  <div id="introHud" class="sticker"><b id="introCount">تعرّفنا على ٠ من ١١</b><span>انقر على أي طعام لنتعرّف عليه</span></div>
+
+  <section id="focusCard" class="sticker card" hidden aria-live="polite">
+    <div class="fc-name" id="fcName"></div>
+    <div id="fcAsk" style="display:flex;flex-direction:column;gap:inherit">
+      <p class="fc-q" id="fcQ"></p>
+      <div class="fc-actions">
+        <button class="btn btn-good" data-ans="1"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#fff" stroke="#2B1A0F" stroke-width="3"/><circle cx="17" cy="20" r="3" fill="#2B1A0F"/><circle cx="31" cy="20" r="3" fill="#2B1A0F"/><path d="M14 28q10 10 20 0" fill="none" stroke="#2B1A0F" stroke-width="3.5" stroke-linecap="round"/></svg>صحي</button>
+        <button class="btn btn-bad" data-ans="0"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#fff" stroke="#2B1A0F" stroke-width="3"/><circle cx="17" cy="20" r="3" fill="#2B1A0F"/><circle cx="31" cy="20" r="3" fill="#2B1A0F"/><path d="M14 34q10 -9 20 0" fill="none" stroke="#2B1A0F" stroke-width="3.5" stroke-linecap="round"/></svg>غير صحي</button>
+      </div>
+    </div>
+    <div id="fcResult" hidden style="display:flex;flex-direction:column;gap:inherit;align-items:center">
+      <div class="fc-res" id="fcRes">
+        <svg class="face" id="fcFace" viewBox="0 0 48 48"></svg>
+        <div><p class="fc-head" id="fcHead"></p><p class="fc-line" id="fcLine"></p><p class="fc-why" id="fcWhy"></p></div>
+      </div>
+      <button class="btn btn-main" id="fcBack">عودة إلى الضيوف</button>
+    </div>
+  </section>
+
+  <!-- mouth mode -->
+  <div id="energy" class="sticker" hidden><span class="lbl">طاقة الطاهي الصغير</span><div id="bar"></div><span class="num" id="energyNum">٠ / ١٢</span></div>
+  <div id="rules" class="sticker" hidden>
+    <div class="rule good"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#D9F2E2" stroke="#2B1A0F" stroke-width="3"/><circle cx="17" cy="18" r="3" fill="#2B1A0F"/><circle cx="31" cy="18" r="3" fill="#2B1A0F"/><ellipse cx="24" cy="31" rx="7" ry="8" fill="#2B1A0F"/></svg><span><b>صحي</b> ← افتح فمك</span></div>
+    <div class="rule bad"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#FBE0DD" stroke="#2B1A0F" stroke-width="3"/><circle cx="17" cy="18" r="3" fill="#2B1A0F"/><circle cx="31" cy="18" r="3" fill="#2B1A0F"/><path d="M15 31h18" stroke="#2B1A0F" stroke-width="4" stroke-linecap="round"/></svg><span><b>غير صحي</b> ← أغلق فمك</span></div>
+  </div>
+  <div id="faceHint" class="sticker" hidden>قِف أمام السبورة ليظهر وجهك</div>
+  <div id="count" hidden></div>
+
+  <section id="mouthCard" class="sticker card" hidden>
+    <h2>افتح فمك!</h2>
+    <p>يقف طالب أمام السبورة فيصبح «الطاهي الصغير».</p>
+    <ul class="rules-big">
+      <li class="good"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#D9F2E2" stroke="#2B1A0F" stroke-width="3"/><circle cx="17" cy="18" r="3" fill="#2B1A0F"/><circle cx="31" cy="18" r="3" fill="#2B1A0F"/><ellipse cx="24" cy="31" rx="7" ry="8" fill="#2B1A0F"/></svg><span>طعام <b>صحي</b> ← افتح فمك وكُله</span></li>
+      <li class="bad"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#FBE0DD" stroke="#2B1A0F" stroke-width="3"/><circle cx="17" cy="18" r="3" fill="#2B1A0F"/><circle cx="31" cy="18" r="3" fill="#2B1A0F"/><path d="M15 31h18" stroke="#2B1A0F" stroke-width="4" stroke-linecap="round"/></svg><span>طعام <b>غير صحي</b> ← أغلق فمك</span></li>
+    </ul>
+    <button class="btn btn-main big" id="btnMouthStart" disabled>نجهّز التعرّف على الوجه…</button>
+    <p class="err" id="mouthErr" hidden></p>
+  </section>
+
+  <section id="endCard" class="sticker card" hidden>
+    <div class="stars" id="stars"><span>★</span><span>★</span><span>★</span></div>
+    <h2 id="endHead">طاقة كاملة!</h2>
+    <div class="end-stats" id="endStats"></div>
+    <button class="btn btn-main big" id="btnAgain">طالب جديد</button>
+  </section>
+
+  <nav id="modes" class="sticker" aria-label="أنماط الدرس">
+    <button data-mode="intro" class="on">ضيوف في صفّنا</button>
+    <button data-mode="mouth">افتح فمك</button>
+  </nav>
+
+  <div id="toast" class="sticker" role="status" hidden></div>
+  <div id="simNote" class="sticker" hidden>وضع التجربة: مؤشر الفأرة مكان الفم، واضغط الزر لفتح الفم.</div>
+</div>
+
+<div id="start">
+  <div class="start-card sticker">
+    <p class="eyebrow">العلوم · الصف الأول · درس الغذاء الصحي</p>
+    <h1>مرآة <em>الغذاء</em> الصحي</h1>
+    <p class="lead">يرى الطلاب صفّهم على السبورة، وبينهم أطعمة تطير وتدور.</p>
+    <button class="btn btn-main big" id="btnStart">شغّل الكاميرا وابدأ</button>
+    <button class="btn-link" id="btnNoCam">ابدأ بدون كاميرا</button>
+    <p class="err" id="startErr" hidden></p>
+    <p class="privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>صورة الكاميرا تُعرض على هذا الجهاز فقط، ولا تُسجَّل ولا تُرسَل إلى أي مكان.</p>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+/* ================= settings ================= */
+const MP_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+const FACE_MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+const ROUND = 12;                    // foods per student in «افتح فمك»
+const SPEEDS = { slow: 6.0, normal: 4.4, fast: 3.2 };   // seconds per flight
+const JAW_OPEN = 0.30, JAW_CLOSE = 0.18;               // mouth thresholds (jawOpen blendshape)
+const SIM = new URLSearchParams(location.search).has('sim');
+
+const FOODS = [
+  { id:'apple',  name:'تفاحة',       def:'التفاح',          kind:'طعام',  healthy:true,  why:'التفاح يمنح أجسامنا الفيتامينات والنشاط.' },
+  { id:'banana', name:'موزة',        def:'الموز',           kind:'طعام',  healthy:true,  why:'الموز يعطينا طاقة لنلعب ونتعلّم.' },
+  { id:'date',   name:'تمرة',        def:'التمر',           kind:'طعام',  healthy:true,  why:'التمر غذاء مفيد يمنحنا الطاقة.' },
+  { id:'carrot', name:'جزرة',        def:'الجزر',           kind:'طعام',  healthy:true,  why:'الجزر مفيد لعيوننا وأجسامنا.' },
+  { id:'fish',   name:'سمكة',        def:'السمك',           kind:'طعام',  healthy:true,  why:'السمك يساعد أجسامنا على النمو.' },
+  { id:'milk',   name:'حليب',        def:'الحليب',          kind:'مشروب', healthy:true,  why:'الحليب يقوّي العظام والأسنان.' },
+  { id:'water',  name:'ماء',         def:'الماء',           kind:'مشروب', healthy:true,  why:'الماء يروي أجسامنا ويحافظ على صحتها.' },
+  { id:'lolly',  name:'حلوى',        def:'الحلوى',          kind:'طعام',  healthy:false, why:'الحلوى الكثيرة تضرّ أسناننا.' },
+  { id:'chips',  name:'شيبس',        def:'الشيبس',          kind:'طعام',  healthy:false, why:'الشيبس فيه ملح ودهون كثيرة.' },
+  { id:'soda',   name:'مشروب غازي',  def:'المشروب الغازي',  kind:'مشروب', healthy:false, why:'المشروب الغازي فيه سكر كثير يضرّ الأسنان.' },
+  { id:'donut',  name:'دونات',       def:'الدونات',         kind:'طعام',  healthy:false, why:'الدونات فيها سكر ودهون كثيرة.' },
+];
+
+/* ================= helpers ================= */
+const $ = s => document.querySelector(s);
+const ar = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+const V3 = (x=0,y=0,z=0) => new THREE.Vector3(x,y,z);
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+const lerp = (a,b,t) => a + (b-a)*t;
+const rand = (a,b) => a + Math.random()*(b-a);
+const easeOutBack = t => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3*Math.pow(t-1,3) + c1*Math.pow(t-1,2); };
+const easeInOut = t => t<.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+/* ================= renderer ================= */
+const canvas = $('#scene');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NoToneMapping;   // keeps the food colors bright and true
+renderer.setClearColor(0x000000, 0);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+scene.add(new THREE.HemisphereLight(0xfff6e6, 0x6b4a2e, 0.9));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(-4, 8, 10); scene.add(sun);
+
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
+camera.position.set(0, 0, 12);
+let W = 1, H = 1;
+function resize(){
+  W = window.innerWidth; H = window.innerHeight;
+  renderer.setSize(W, H, false);
+  camera.aspect = W / H; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize); resize();
+
+function viewSize(z=0){
+  const d = camera.position.z - z;
+  const h = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov/2)) * d;
+  return { w: h * camera.aspect, h };
+}
+function screenToWorld(sx, sy, z=0){
+  const { w, h } = viewSize(z);
+  return V3((sx/W - .5) * w, -(sy/H - .5) * h, z);
+}
+const _p = V3();
+function worldToScreen(v){
+  _p.copy(v).project(camera);
+  return { x: (_p.x + 1) / 2 * W, y: (1 - _p.y) / 2 * H };
+}
+
+/* ================= placeholder models (procedural) ================= */
+const mat = (color, o={}) => new THREE.MeshPhysicalMaterial({ color, roughness:.42, clearcoat:.5, clearcoatRoughness:.3, envMapIntensity:.75, ...o });
+function canvasTex(w, h, draw){
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+}
+function lathe(points, segs=48){
+  return new THREE.LatheGeometry(new THREE.SplineCurve(points.map(p => new THREE.Vector2(p[0], p[1]))).getPoints(48), segs);
+}
+function mesh(geo, m, pos, rot, scale){
+  const o = new THREE.Mesh(geo, m);
+  if (pos) o.position.set(...pos);
+  if (rot) o.rotation.set(...rot);
+  if (scale) o.scale.set(...scale);
+  return o;
+}
+function normalize(g, size=1.8){
+  const box = new THREE.Box3().setFromObject(g);
+  const s = box.getSize(V3()), c = box.getCenter(V3());
+  g.position.sub(c);
+  const wrap = new THREE.Group(); wrap.add(g);
+  wrap.scale.setScalar(size / Math.max(s.x, s.y, s.z));
+  return wrap;
+}
+
+const BUILD = {
+  apple(){
+    const g = new THREE.Group();
+    g.add(mesh(lathe([[0,-.78],[.28,-.86],[.62,-.72],[.88,-.36],[.95,.04],[.86,.44],[.6,.72],[.3,.74],[.1,.62],[0,.56]]), mat(0xD9302B)));
+    g.add(mesh(new THREE.CylinderGeometry(.045,.065,.46,10), mat(0x6B3E1F,{clearcoat:0}), [.04,.8,0], [0,0,-.22]));
+    g.add(mesh(new THREE.SphereGeometry(.5,20,12), mat(0x4FAE4A), [.28,.86,0], [0,0,.55], [.5,.08,.24]));
+    return g;
+  },
+  banana(){
+    const curve = new THREE.QuadraticBezierCurve3(V3(-1,.38,0), V3(0,-.6,0), V3(1,.38,0));
+    const TS = 48, RS = 16, geo = new THREE.TubeGeometry(curve, TS, .27, RS, false);
+    const pos = geo.attributes.position, c = V3(), v = V3();
+    for (let i=0;i<=TS;i++){
+      curve.getPointAt(i/TS, c);
+      const k = .32 + .68 * Math.pow(Math.sin(Math.PI*i/TS), .55);
+      for (let j=0;j<=RS;j++){ const idx = i*(RS+1)+j; v.fromBufferAttribute(pos, idx).sub(c).multiplyScalar(k).add(c); pos.setXYZ(idx, v.x, v.y, v.z); }
+    }
+    geo.computeVertexNormals();
+    const g = new THREE.Group();
+    g.add(mesh(geo, mat(0xF6C944)));
+    const tip = mat(0x5A3A1C,{clearcoat:0});
+    g.add(mesh(new THREE.SphereGeometry(.1,10,8), tip, [-1,.38,0]));
+    g.add(mesh(new THREE.CylinderGeometry(.06,.09,.22,8), mat(0x8A9A3A), [1.04,.48,0], [0,0,-.7]));
+    return g;
+  },
+  date(){
+    const geo = new THREE.SphereGeometry(.5, 40, 28); geo.scale(.62, 1, .62);
+    const p = geo.attributes.position, v = V3();
+    for (let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i); const a = Math.atan2(v.z, v.x);
+      const k = 1 + .035*Math.sin(v.y*38 + a*3) + .02*Math.sin(a*7); p.setXYZ(i, v.x*k, v.y, v.z*k); }
+    geo.computeVertexNormals();
+    const g = new THREE.Group();
+    g.add(mesh(geo, mat(0x7B3519,{roughness:.28, clearcoat:1})));
+    g.add(mesh(new THREE.CylinderGeometry(.12,.1,.07,16), mat(0xC9A15B,{clearcoat:0}), [0,.5,0]));
+    return g;
+  },
+  carrot(){
+    const pts = []; for (let i=0;i<=24;i++){ const t = i/24; pts.push([Math.max(.001, .34*Math.pow(t,.75) + .018*Math.sin(t*44)*t), -1.1 + t*1.65]); }
+    pts.push([.3,.6],[0,.62]);
+    const g = new THREE.Group();
+    g.add(mesh(lathe(pts), mat(0xF27A1A)));
+    const leaf = mat(0x3E9B3A);
+    [[-.12,.92,0,.35],[.1,.95,.05,-.3],[0,1.0,-.08,0]].forEach(([x,y,z,r]) => g.add(mesh(new THREE.ConeGeometry(.08,.75,8), leaf, [x,y,z], [0,0,r])));
+    return g;
+  },
+  fish(){
+    const geo = new THREE.SphereGeometry(.5, 40, 24); geo.scale(2, 1.05, .62);
+    const colors = [], p = geo.attributes.position, top = new THREE.Color(0x2F78B8), belly = new THREE.Color(0xD6ECF7), c = new THREE.Color();
+    for (let i=0;i<p.count;i++){ const t = clamp((p.getY(i)+.52)/1.04, 0, 1); c.copy(belly).lerp(top, Math.pow(t,.9)); colors.push(c.r,c.g,c.b); }
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    const g = new THREE.Group();
+    g.add(mesh(geo, mat(0xffffff,{vertexColors:true})));
+    const fin = mat(0xF2A33A);
+    g.add(mesh(new THREE.ConeGeometry(.42,.6,4), fin, [-1.18,0,0], [0,0,-Math.PI/2], [1,1,.25]));
+    g.add(mesh(new THREE.ConeGeometry(.22,.42,4), fin, [-.1,.55,0], [0,0,.4], [1,1,.25]));
+    g.add(mesh(new THREE.SphereGeometry(.13,16,12), mat(0xffffff), [.62,.12,.25]));
+    g.add(mesh(new THREE.SphereGeometry(.07,12,10), mat(0x1A1A1A), [.66,.13,.34]));
+    return g;
+  },
+  milk(){
+    const g = new THREE.Group();
+    g.add(mesh(new THREE.CylinderGeometry(.47,.38,1.4,40,1,true), mat(0xE8F4FF,{transparent:true, opacity:.35, roughness:.05, clearcoat:1, side:THREE.DoubleSide, depthWrite:false})));
+    g.add(mesh(new THREE.CylinderGeometry(.44,.37,1.08,40), mat(0xFFFFFF,{roughness:.55, clearcoat:.2}), [0,-.14,0]));
+    g.add(mesh(new THREE.TorusGeometry(.47,.025,8,40), mat(0xffffff,{transparent:true,opacity:.6}), [0,.7,0], [Math.PI/2,0,0]));
+    return g;
+  },
+  water(){
+    const g = new THREE.Group();
+    g.add(mesh(lathe([[0,-.95],[.36,-.95],[.42,-.86],[.42,.22],[.36,.45],[.2,.62],[.16,.72],[.16,.78],[0,.79]]),
+      mat(0x8ED6F6,{transparent:true, opacity:.78, roughness:.08, clearcoat:1})));
+    g.add(mesh(new THREE.CylinderGeometry(.18,.18,.16,24), mat(0x1F6FB8), [0,.86,0]));
+    const label = canvasTex(256, 64, (x,w,h) => { x.fillStyle = '#ffffff'; x.fillRect(0,0,w,h); x.fillStyle = '#2E9BDA';
+      for (let i=0;i<4;i++){ x.beginPath(); const cx = 32 + i*64; x.moveTo(cx, 14); x.quadraticCurveTo(cx+14, 34, cx, 50); x.quadraticCurveTo(cx-14, 34, cx, 14); x.fill(); } });
+    g.add(mesh(new THREE.CylinderGeometry(.43,.43,.38,40,1,true), mat(0xffffff,{map:label}), [0,-.25,0]));
+    return g;
+  },
+  lolly(){
+    const spiral = canvasTex(256, 256, (x,w,h) => { x.fillStyle = '#FFF4F8'; x.fillRect(0,0,w,h); x.strokeStyle = '#EE4C8C'; x.lineWidth = 22; x.lineCap = 'round';
+      x.beginPath(); for (let a=0;a<6.2*Math.PI;a+=.05){ const r = a*6.1; const px = w/2 + Math.cos(a)*r, py = h/2 + Math.sin(a)*r; a===0 ? x.moveTo(px,py) : x.lineTo(px,py); } x.stroke(); });
+    const g = new THREE.Group();
+    const side = mat(0xEE4C8C), face = mat(0xffffff,{map:spiral});
+    g.add(mesh(new THREE.CylinderGeometry(.66,.66,.2,48), [side, face, face], [0,.35,0], [Math.PI/2,0,0]));
+    g.add(mesh(new THREE.CylinderGeometry(.045,.045,1.25,10), mat(0xF7F3EA,{clearcoat:0}), [0,-.75,-.02]));
+    return g;
+  },
+  chips(){
+    const geo = new THREE.BoxGeometry(1, 1.35, .4, 18, 18, 4);
+    const p = geo.attributes.position;
+    for (let i=0;i<p.count;i++){
+      const nx = p.getX(i)/.5, ny = p.getY(i)/.675, z = p.getZ(i);
+      const puff = Math.sqrt(Math.max(0, 1 - nx*nx*.9)) * (1 - Math.pow(Math.abs(ny), 6));
+      p.setZ(i, Math.sign(z) * (.025 + .23*puff));
+    }
+    geo.computeVertexNormals();
+    const face = canvasTex(256, 346, (x,w,h) => {
+      x.fillStyle = '#E2342B'; x.fillRect(0,0,w,h);
+      x.fillStyle = '#FFD23F'; x.beginPath(); x.arc(w/2, h*.58, 92, 0, Math.PI*2); x.fill();
+      x.fillStyle = '#F2B233'; for (let i=0;i<6;i++){ x.beginPath(); x.ellipse(w/2 + Math.cos(i)*48, h*.58 + Math.sin(i*1.7)*40, 34, 22, i, 0, Math.PI*2); x.fill(); }
+      x.fillStyle = '#ffffff'; for (const y0 of [8, h-22]) { x.beginPath(); for (let i=0;i<=16;i++){ x.lineTo(i*16, y0 + (i%2 ? 14 : 0)); } x.lineTo(w, y0+14); x.lineTo(0, y0+14); x.fill(); }
+      x.fillStyle = '#ffffff'; x.font = 'bold 54px Tahoma, sans-serif'; x.textAlign = 'center'; x.fillText('شيبس', w/2, 100);
+    });
+    const side = mat(0xE2342B), f = mat(0xffffff,{map:face, roughness:.3});
+    const g = new THREE.Group(); g.add(new THREE.Mesh(geo, [side, side, side, side, f, f])); return g;
+  },
+  soda(){
+    const label = canvasTex(512, 256, (x,w,h) => {
+      x.fillStyle = '#D9262B'; x.fillRect(0,0,w,h);
+      x.strokeStyle = '#ffffff'; x.lineWidth = 26; x.beginPath(); x.moveTo(0, h*.62); for (let i=0;i<=w;i+=8) x.lineTo(i, h*.6 + Math.sin(i/40)*18); x.stroke();
+      x.fillStyle = 'rgba(255,255,255,.75)'; for (let i=0;i<28;i++){ x.beginPath(); x.arc(Math.random()*w, Math.random()*h*.45 + 10, 3 + Math.random()*7, 0, Math.PI*2); x.fill(); }
+    });
+    const metal = mat(0xC9CED6,{metalness:.85, roughness:.28});
+    const g = new THREE.Group();
+    g.add(mesh(new THREE.CylinderGeometry(.42,.42,1.2,40,1,true), mat(0xffffff,{map:label, roughness:.25})));
+    g.add(mesh(new THREE.CylinderGeometry(.35,.42,.12,40), metal, [0,.66,0]));
+    g.add(mesh(new THREE.CylinderGeometry(.42,.35,.12,40), metal, [0,-.66,0]));
+    g.add(mesh(new THREE.BoxGeometry(.2,.03,.11), metal, [.05,.73,0]));
+    return g;
+  },
+  donut(){
+    const R = .5, r = .25;
+    const g = new THREE.Group();
+    g.add(mesh(new THREE.TorusGeometry(R, r, 24, 48), mat(0xD69A57)));
+    const ig = new THREE.TorusGeometry(R, r*1.06, 24, 48); const p = ig.attributes.position;
+    for (let i=0;i<p.count;i++){ const a = Math.atan2(p.getY(i), p.getX(i)); const edge = .02 + .05*Math.sin(a*9);
+      if (p.getZ(i) < edge) p.setZ(i, edge + (p.getZ(i)-edge)*.05); }
+    ig.computeVertexNormals();
+    g.add(mesh(ig, mat(0xF48DB4)));
+    const cols = [0xffffff, 0x4FC3F7, 0xFFD54F, 0x81C784, 0x9575CD];
+    const sg = new THREE.CapsuleGeometry(.018, .07, 3, 6);
+    for (let i=0;i<34;i++){
+      const th = rand(0, Math.PI*2), ph = Math.PI/2 + rand(-.85,.85);
+      const pos = V3((R + r*1.08*Math.cos(ph))*Math.cos(th), (R + r*1.08*Math.cos(ph))*Math.sin(th), r*1.08*Math.sin(ph));
+      g.add(mesh(sg, mat(cols[i%cols.length]), [pos.x,pos.y,pos.z], [rand(0,3), rand(0,3), rand(0,3)]));
+    }
+    g.rotation.x = -.55;
+    return g;
+  },
+  hat(){
+    const white = mat(0xFFFFFF,{roughness:.85, clearcoat:0});
+    const g = new THREE.Group();
+    g.add(mesh(new THREE.CylinderGeometry(.5,.5,.42,40), white, [0,0,0]));
+    g.add(mesh(new THREE.CylinderGeometry(.52,.52,.08,40), mat(0xF4B33F,{roughness:.6, clearcoat:0}), [0,-.17,0]));
+    for (let i=0;i<7;i++){ const a = i/7*Math.PI*2; g.add(mesh(new THREE.SphereGeometry(.3,20,14), white, [Math.cos(a)*.36, .38, Math.sin(a)*.36])); }
+    g.add(mesh(new THREE.SphereGeometry(.42,24,16), white, [0,.52,0]));
+    return g;
+  },
+};
+
+const MODELS = {};
+for (const f of FOODS) MODELS[f.id] = normalize(BUILD[f.id](), 1.8);
+
+// Realistic models (made in Meshy) live in models/<id>.glb. Each one that loads replaces its placeholder;
+// any that is missing keeps the placeholder, so the lesson always works.
+const realLoaded = new Set();
+const onRealModel = [];
+function loadRealModels(){
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  for (const f of FOODS){
+    loader.loadAsync(`models/${f.id}.glb`).then(gltf => {
+      gltf.scene.traverse(o => {
+        if (!o.isMesh) return;
+        const ms = Array.isArray(o.material) ? o.material : [o.material];
+        ms.forEach(m => { if ('envMapIntensity' in m) m.envMapIntensity = 1; });
+      });
+      MODELS[f.id] = normalize(gltf.scene, 1.8);
+      realLoaded.add(f.id);
+      onRealModel.forEach(fn => fn(f.id));
+    }).catch(() => {});
+  }
+}
+const HAT = normalize(BUILD.hat(), 1);   // width ≈ 1 unit, scaled to the face
+
+/* ================= audio ================= */
+let soundOn = true, actx = null;
+function audio(){ if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} } if (actx?.state === 'suspended') actx.resume(); return actx; }
+function tone(freq, dur, type='sine', vol=.18, when=0, slide=0){
+  const a = audio(); if (!a || !soundOn) return;
+  const t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, t); if (slide) o.frequency.exponentialRampToValueAtTime(freq*slide, t+dur);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t+.015); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.05);
+}
+function noise(dur, vol=.15, when=0, freq=1800){
+  const a = audio(); if (!a || !soundOn) return;
+  const t = a.currentTime + when, len = Math.floor(a.sampleRate*dur), buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+  for (let i=0;i<len;i++) d[i] = (Math.random()*2-1) * (1 - i/len);
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  s.buffer = buf; f.type = 'bandpass'; f.frequency.value = freq; g.gain.value = vol;
+  s.connect(f).connect(g).connect(a.destination); s.start(t);
+}
+const SFX = {
+  pop(){ tone(520, .12, 'sine', .2, 0, 1.8); },
+  chime(){ [523, 659, 784, 1047].forEach((f,i) => tone(f, .35, 'triangle', .16, i*.08)); },
+  buzz(){ tone(180, .32, 'square', .07, 0, .7); tone(150, .32, 'square', .05, .05, .7); },
+  munch(){ for (let i=0;i<3;i++) noise(.08, .25, i*.11, 1400 + i*300); },
+  whoosh(){ noise(.5, .06, 0, 900); },
+  soft(){ tone(330, .25, 'sine', .12, 0, .8); },
+};
+
+let voice = null;
+function pickVoice(){
+  const vs = window.speechSynthesis?.getVoices?.() || [];
+  const arV = vs.filter(v => /^ar/i.test(v.lang));
+  voice = arV.find(v => /natural|online/i.test(v.name)) || arV[0] || null;
+}
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function say(text){
+  if (!soundOn || !('speechSynthesis' in window) || !voice) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.voice = voice; u.lang = voice.lang; u.rate = .9; u.pitch = 1.05;
+  speechSynthesis.speak(u);
+}
+
+/* ================= confetti / sparkles ================= */
+const CONF_COLORS = [0xF4B33F, 0x1F8F55, 0xD63A3A, 0x4FC3F7, 0xF48DB4, 0xFFFFFF];
+const confMats = CONF_COLORS.map(c => new THREE.MeshBasicMaterial({ color:c, side:THREE.DoubleSide }));
+const confGeo = new THREE.PlaneGeometry(.16, .26);
+const confetti = [];
+function burst(at, n=60, colors=null, power=1){
+  for (let i=0;i<n;i++){
+    const m = new THREE.Mesh(confGeo, colors ? confMats[colors[i%colors.length]] : confMats[i%confMats.length]);
+    m.position.copy(at);
+    const a = rand(0, Math.PI*2), sp = rand(3, 8)*power;
+    m.userData = { v: V3(Math.cos(a)*sp, Math.sin(a)*sp*.8 + 4*power, rand(-2,3)), spin: V3(rand(-8,8), rand(-8,8), rand(-8,8)), life: rand(1.2, 1.9) };
+    scene.add(m); confetti.push(m);
+  }
+}
+function updateConfetti(dt){
+  for (let i=confetti.length-1;i>=0;i--){
+    const m = confetti[i], u = m.userData;
+    u.v.y -= 11*dt; u.v.multiplyScalar(1 - .9*dt);
+    m.position.addScaledVector(u.v, dt);
+    m.rotation.x += u.spin.x*dt; m.rotation.y += u.spin.y*dt; m.rotation.z += u.spin.z*dt;
+    u.life -= dt; if (u.life < .4) m.scale.setScalar(Math.max(.01, u.life/.4));
+    if (u.life <= 0){ scene.remove(m); confetti.splice(i,1); }
+  }
+}
+
+/* ================= camera ================= */
+const video = $('#cam');
+let stream = null, camReady = false;
+function stopCamera(){ if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; camReady = false; document.body.classList.remove('has-cam'); }
+async function startCamera(deviceId){
+  if (!window.isSecureContext) throw Object.assign(new Error('insecure'), { name:'Insecure' });
+  if (!navigator.mediaDevices?.getUserMedia) throw Object.assign(new Error('unsupported'), { name:'Unsupported' });
+  stopCamera();
+  const v = { width:{ ideal:1280 }, height:{ ideal:720 } };
+  stream = await navigator.mediaDevices.getUserMedia({ audio:false, video: deviceId ? { ...v, deviceId:{ exact:deviceId } } : { ...v, facingMode:'user' } });
+  video.srcObject = stream;
+  await video.play();
+  if (video.readyState < 2) await new Promise(r => video.addEventListener('loadeddata', r, { once:true }));
+  camReady = true; document.body.classList.add('has-cam');
+  listCameras();
+}
+function cameraError(e){
+  switch (e?.name) {
+    case 'NotAllowedError': case 'SecurityError': return 'لم يُسمح باستخدام الكاميرا. اضغط على رمز الكاميرا في شريط العنوان واختر «السماح»، ثم أعد المحاولة.';
+    case 'NotFoundError': case 'OverconstrainedError': return 'لم نجد كاميرا متصلة بهذا الجهاز.';
+    case 'NotReadableError': return 'الكاميرا مستخدمة الآن في برنامج آخر. أغلقه ثم أعد المحاولة.';
+    case 'Insecure': return 'الكاميرا لا تعمل إلا عند فتح الصفحة من رابطها على الإنترنت (https).';
+    default: return 'تعذّر تشغيل الكاميرا هنا. افتح الصفحة من رابطها في متصفح Chrome أو Edge، أو اضغط «ابدأ بدون كاميرا» لتجربة «ضيوف في صفّنا».';
+  }
+}
+// Was the camera blocked by the place the page is opened in (a file preview or embedded frame) or by the user?
+const IN_FRAME = (() => { try { return window.self !== window.top; } catch(e){ return true; } })();
+const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+async function camPermState(){ try { return (await navigator.permissions.query({ name:'camera' })).state; } catch(e){ return 'unknown'; } }
+async function explainCameraError(e){
+  if (IN_FRAME && ['NotAllowedError','SecurityError','NotSupportedError','Unsupported','Insecure'].includes(e?.name))
+    return 'هذه نافذة معاينة لا تسمح بتشغيل الكاميرا. افتح الصفحة من رابطها في متصفح Chrome أو Edge، ثم اضغط «شغّل الكاميرا وابدأ». ويمكنك الآن تجربة «ضيوف في صفّنا» بالضغط على «ابدأ بدون كاميرا».';
+  if (e?.name === 'NotAllowedError' || e?.name === 'SecurityError'){
+    const st = await camPermState();
+    if (IN_FRAME || st === 'prompt')
+      return 'هذه نافذة معاينة لا تسمح بتشغيل الكاميرا. افتح الصفحة من رابطها في متصفح Chrome أو Edge، ثم اضغط «شغّل الكاميرا وابدأ». ويمكنك الآن تجربة «ضيوف في صفّنا» بالضغط على «ابدأ بدون كاميرا».';
+    if (st === 'denied')
+      return IS_MOBILE
+        ? 'الكاميرا محظورة لهذه الصفحة. اضغط القفل بجانب الرابط، ثم «الأذونات»، واسمح بالكاميرا، وأعد تحميل الصفحة.'
+        : 'الكاميرا محظورة لهذه الصفحة. اضغط رمز الكاميرا أو القفل في شريط العنوان، واختر «السماح»، ثم أعد تحميل الصفحة.';
+    return 'لم يُسمح بتشغيل الكاميرا. إن كانت الصفحة مفتوحة داخل معاينة ملف، فافتحها من رابطها في متصفح Chrome أو Edge. وإن كانت في المتصفح، فاسمح بالكاميرا من القفل بجانب الرابط ثم أعد تحميل الصفحة.';
+  }
+  return cameraError(e);
+}
+async function listCameras(){
+  try {
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+    const sel = $('#camSel'), cur = stream?.getVideoTracks()[0]?.getSettings().deviceId;
+    sel.innerHTML = '';
+    devs.forEach((d,i) => { const o = document.createElement('option'); o.value = d.deviceId; o.textContent = d.label || `كاميرا ${ar(i+1)}`; if (d.deviceId === cur) o.selected = true; sel.appendChild(o); });
+    if (!devs.length) sel.innerHTML = '<option value="">لا توجد كاميرا</option>';
+  } catch(e){}
+}
+function videoToScreen(nx, ny){
+  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
+  const s = Math.max(W/vw, H/vh), dw = vw*s, dh = vh*s;
+  const x = mirror ? 1 - nx : nx;
+  return { x: (W - dw)/2 + x*dw, y: (H - dh)/2 + ny*dh };
+}
+
+/* ================= face tracking ================= */
+let landmarker = null, mpLoading = null, lastVideoTime = -1, lastDetect = 0;
+async function loadLandmarker(){
+  if (landmarker) return landmarker;
+  if (!mpLoading) mpLoading = (async () => {
+    const { FilesetResolver, FaceLandmarker } = await import(`${MP_URL}/vision_bundle.mjs`);
+    const fileset = await FilesetResolver.forVisionTasks(`${MP_URL}/wasm`);
+    const opts = delegate => ({ baseOptions:{ modelAssetPath:FACE_MODEL, delegate }, runningMode:'VIDEO', numFaces:3,
+      outputFaceBlendshapes:true, minFaceDetectionConfidence:.5, minFacePresenceConfidence:.5, minTrackingConfidence:.5 });
+    try { landmarker = await FaceLandmarker.createFromOptions(fileset, opts('GPU')); }
+    catch(e){ landmarker = await FaceLandmarker.createFromOptions(fileset, opts('CPU')); }
+    return landmarker;
+  })().catch(e => { mpLoading = null; throw e; });
+  return mpLoading;
+}
+
+const face = { seen:false, lastSeen:-1e9, mouth:{x:0,y:0}, fore:{x:0,y:0}, chin:{x:0,y:0}, width:0, jaw:0, open:false, fresh:true };
+function setFace(m, f, c, wpx, jaw, now){
+  const k = face.fresh ? 1 : .55;
+  for (const [key, val] of [['mouth',m],['fore',f],['chin',c]]){ face[key].x = lerp(face[key].x, val.x, k); face[key].y = lerp(face[key].y, val.y, k); }
+  face.width = lerp(face.width, wpx, k);
+  face.jaw = lerp(face.jaw, jaw, .6);
+  if (!face.open && face.jaw > JAW_OPEN) face.open = true;
+  else if (face.open && face.jaw < JAW_CLOSE) face.open = false;
+  face.seen = true; face.lastSeen = now; face.fresh = false;
+}
+function track(now){
+  if (SIM) return;
+  if (!landmarker || !camReady || video.readyState < 2) return;
+  if (video.currentTime === lastVideoTime || now - lastDetect < 40) return;
+  lastVideoTime = video.currentTime; lastDetect = now;
+  let res; try { res = landmarker.detectForVideo(video, now); } catch(e){ return; }
+  if (!res?.faceLandmarks?.length) return;
+  let best = 0, bw = 0;
+  res.faceLandmarks.forEach((lm, i) => { const w = Math.abs(lm[454].x - lm[234].x); if (w > bw){ bw = w; best = i; } });
+  const lm = res.faceLandmarks[best];
+  const P = i => videoToScreen(lm[i].x, lm[i].y);
+  const up = P(13), lo = P(14), l = P(234), r = P(454);
+  const jaw = res.faceBlendshapes?.[best]?.categories.find(c => c.categoryName === 'jawOpen')?.score ?? 0;
+  setFace({ x:(up.x+lo.x)/2, y:(up.y+lo.y)/2 }, P(10), P(152), Math.hypot(r.x-l.x, r.y-l.y), jaw, now);
+}
+// ?sim — test without a camera: the mouse is the mouth, press to open it
+let simDown = false;
+if (SIM){
+  $('#simNote').hidden = false;
+  window.addEventListener('pointermove', e => { if (mode === 'mouth') { const w = Math.min(W,H)*.22; setFace({x:e.clientX, y:e.clientY}, {x:e.clientX, y:e.clientY - w*.95}, {x:e.clientX, y:e.clientY + w*.35}, w, simDown ? .8 : 0, performance.now()); } });
+  window.addEventListener('pointerdown', () => simDown = true);
+  window.addEventListener('pointerup', () => simDown = false);
+}
+function faceVisible(now){
+  if (SIM) { if (face.seen) { face.lastSeen = now; face.jaw = simDown ? .8 : 0; face.open = simDown; } return face.seen; }
+  return face.seen && now - face.lastSeen < 700;
+}
+
+/* ================= state ================= */
+let mode = 'intro', mirror = true, speed = 'normal';
+const introGroup = new THREE.Group(), mouthGroup = new THREE.Group();
+scene.add(introGroup, mouthGroup);
+
+/* ---------- intro mode: «ضيوف في صفّنا» ---------- */
+const tagsLayer = $('#tags');
+const guests = FOODS.map((food, i) => {
+  const holder = new THREE.Group();
+  const model = new THREE.Group(); model.add(MODELS[food.id].clone()); holder.add(model);
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(1.25, 12, 8), new THREE.MeshBasicMaterial()); hit.visible = false; holder.add(hit);
+  introGroup.add(holder);
+  const tag = document.createElement('div'); tag.className = 'tag' + (food.healthy ? '' : ' bad'); tag.textContent = food.name; tagsLayer.appendChild(tag);
+  return { food, holder, model, hit, tag, s0: i / FOODS.length + .02, z0: [-1.5, .5, -.4][i%3], phase: rand(0, 6), spin: rand(.25, .5) * (i%2 ? 1 : -1), focus: 0, target: 0, visited: false };
+});
+let orbit = 0, orbitSpeed = 1, selected = null, dim = 0;
+onRealModel.push(id => {
+  for (const g of guests) if (g.food.id === id){ g.model.clear(); g.model.add(MODELS[id].clone()); }
+  const n = realLoaded.size, el = $('#modelsInfo');
+  if (el) el.textContent = n === FOODS.length ? 'كل الأطعمة بمجسّمات واقعية.' : `مجسّمات واقعية: ${ar(n)} من ${ar(FOODS.length)}`;
+});
+loadRealModels();
+
+// even spacing around the ring: map arc length (0..1) to an angle on the ellipse
+const ARC_N = 240, arcTable = new Float32Array(ARC_N + 1);
+let arcKey = '';
+function buildArc(rx, ry){
+  const key = rx.toFixed(3) + ':' + ry.toFixed(3); if (key === arcKey) return; arcKey = key;
+  let acc = 0, px = rx, py = 0; arcTable[0] = 0;
+  for (let i=1;i<=ARC_N;i++){ const th = i/ARC_N*Math.PI*2, x = Math.cos(th)*rx, y = Math.sin(th)*ry; acc += Math.hypot(x-px, y-py); arcTable[i] = acc; px = x; py = y; }
+  for (let i=0;i<=ARC_N;i++) arcTable[i] /= acc;
+}
+function thetaAt(s){
+  s = ((s % 1) + 1) % 1;
+  let lo = 0, hi = ARC_N;
+  while (hi - lo > 1){ const mid = (lo + hi) >> 1; if (arcTable[mid] < s) lo = mid; else hi = mid; }
+  const f = (s - arcTable[lo]) / ((arcTable[hi] - arcTable[lo]) || 1);
+  return (lo + f) / ARC_N * Math.PI * 2;
+}
+
+function guestBaseScale(){ const vs = viewSize(0); return clamp(Math.min(vs.w, vs.h) * .17, .9, 1.7) / 1.8; }
+function updateIntro(dt, t){
+  orbitSpeed = lerp(orbitSpeed, selected ? .25 : 1, dt*3);
+  dim = lerp(dim, selected ? 1 : 0, dt*4);
+  orbit += dt * .008 * orbitSpeed;
+  const vs = viewSize(0), base = guestBaseScale(), camZ = camera.position.z;
+  const portrait = W < H;
+  const rx = vs.w * (portrait ? .34 : .40), ry = vs.h * (portrait ? .34 : .24), cy = vs.h * .04;
+  buildArc(rx, ry);
+  for (const g of guests){
+    g.focus = lerp(g.focus, g.target, 1 - Math.pow(.002, dt));
+    const th = thetaAt(g.s0 + orbit);
+    const z = g.z0 - Math.sin(th) * 1.3 - dim * 3; // top of the ring recedes; all step back while one guest is in focus
+    const k = (camZ - z) / camZ;
+    const ox = Math.cos(th) * rx * k, oy = (Math.sin(th) * ry + cy + Math.sin(t*1.25 + g.phase) * .18) * k;
+    const f = easeOutBack(clamp(g.focus, 0, 1));
+    g.holder.position.set(lerp(ox, 0, f), lerp(oy, vs.h*.18, f), lerp(z, 2, f));
+    g.holder.scale.setScalar(base * lerp(1 - .22*dim, 1.45, f));
+    g.model.rotation.y += dt * g.spin * (1 + g.focus*1.4);
+    g.model.rotation.x = Math.sin(t*.9 + g.phase) * .18 * (1 - g.focus);
+    // name tag under each guest
+    const show = g.focus < .15 && mode === 'intro' && !selected;
+    g.tag.style.opacity = show ? 1 : 0;
+    if (show){
+      const r = 0.95 * base * 1.8 / 2;
+      const s = worldToScreen(V3(g.holder.position.x, g.holder.position.y - r * 1.05, g.holder.position.z));
+      g.tag.style.transform = `translate(${s.x}px, ${s.y}px) translate(-50%, 0)`;
+    }
+  }
+}
+function updateIntroHud(){
+  const n = guests.filter(g => g.visited).length;
+  const hud = $('#introHud');
+  if (n === guests.length){ $('#introCount').textContent = 'تعرّفنا على كل الضيوف!'; hud.classList.add('all'); hud.querySelector('span').textContent = 'أحسنتم يا أبطال الغذاء'; }
+  else { $('#introCount').textContent = `تعرّفنا على ${ar(n)} من ${ar(guests.length)}`; hud.classList.remove('all'); hud.querySelector('span').textContent = 'انقر على أي طعام لنتعرّف عليه'; }
+}
+const raycaster = new THREE.Raycaster(), ndc = new THREE.Vector2();
+canvas.addEventListener('pointerdown', e => {
+  audio();
+  if (mode !== 'intro' || selected) return;
+  ndc.set(e.clientX / W * 2 - 1, -(e.clientY / H) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObjects(guests.map(g => g.hit), false);
+  if (!hits.length) return;
+  const g = guests.find(x => x.hit === hits[0].object);
+  selectGuest(g);
+});
+function selectGuest(g){
+  selected = g; g.target = 1; SFX.pop();
+  const f = g.food;
+  $('#fcName').textContent = f.name;
+  $('#fcQ').textContent = `هل هذا ${f.kind} صحي أم غير صحي؟`;
+  $('#fcAsk').hidden = false; $('#fcResult').hidden = true;
+  $('#focusCard').hidden = false;
+  $('#introHud').hidden = true;
+  say(`${f.name}. هل هذا ${f.kind} صحي أم غير صحي؟`);
+}
+const FACE_SVG = {
+  good: '<circle cx="24" cy="24" r="21" fill="#1F8F55" stroke="#2B1A0F" stroke-width="3"/><circle cx="17" cy="20" r="3.2" fill="#fff"/><circle cx="31" cy="20" r="3.2" fill="#fff"/><path d="M13.5 27.5q10.5 11 21 0" fill="none" stroke="#fff" stroke-width="3.8" stroke-linecap="round"/>',
+  bad:  '<circle cx="24" cy="24" r="21" fill="#D63A3A" stroke="#2B1A0F" stroke-width="3"/><circle cx="17" cy="20" r="3.2" fill="#fff"/><circle cx="31" cy="20" r="3.2" fill="#fff"/><path d="M14 35q10 -9.5 20 0" fill="none" stroke="#fff" stroke-width="3.8" stroke-linecap="round"/>',
+};
+document.querySelectorAll('#fcAsk [data-ans]').forEach(b => b.addEventListener('click', () => {
+  if (!selected) return;
+  const f = selected.food, choseHealthy = b.dataset.ans === '1', correct = choseHealthy === f.healthy;
+  const head = correct ? 'أحسنتم!' : 'لنتعلّم معاً';
+  const line = `${f.def} ${f.kind} ${f.healthy ? 'صحي' : 'غير صحي'}`;
+  $('#fcFace').innerHTML = f.healthy ? FACE_SVG.good : FACE_SVG.bad;
+  $('#fcRes').className = 'fc-res ' + (f.healthy ? 'good' : 'bad');
+  $('#fcHead').textContent = head; $('#fcLine').textContent = line; $('#fcWhy').textContent = f.why;
+  $('#fcAsk').hidden = true; $('#fcResult').hidden = false;
+  selected.visited = true; selected.tag.classList.add('done');
+  if (correct){ SFX.chime(); burst(selected.holder.position.clone(), 70); } else SFX.soft();
+  say(`${head} ${line}. ${f.why}`);
+}));
+$('#fcBack').addEventListener('click', closeGuest);
+function closeGuest(){
+  if (!selected) return;
+  selected.target = 0; selected = null;
+  $('#focusCard').hidden = true; $('#introHud').hidden = false;
+  updateIntroHud();
+  if (guests.every(g => g.visited)) { SFX.chime(); burst(V3(-3, 2, 1), 60); burst(V3(3, 2, 1), 60); say('أحسنتم! تعرّفنا على كل الضيوف.'); }
+}
+
+/* ---------- mouth mode: «افتح فمك» ---------- */
+const hat = new THREE.Group(); hat.add(HAT.clone()); hat.visible = false; mouthGroup.add(hat);
+const HAT_H = new THREE.Box3().setFromObject(HAT).getSize(V3()).y;   // hat height when its width is 1
+const flyers = [];
+const M = { running:false, queue:[], done:0, energy:0, stats:{ ate:0, refused:0, missed:0, oops:0 }, gap:0, countdown:0, waitingFace:false };
+const bar = $('#bar');
+function buildBar(){ bar.innerHTML = ''; for (let i=0;i<ROUND;i++) bar.appendChild(document.createElement('i')); }
+function renderEnergy(){ [...bar.children].forEach((el, i) => el.classList.toggle('on', i < M.energy)); $('#energyNum').textContent = `${ar(M.energy)} / ${ar(ROUND)}`; }
+function makeQueue(){
+  const healthy = FOODS.filter(f => f.healthy), junk = FOODS.filter(f => !f.healthy);
+  const q = [...shuffle([...healthy, ...healthy]).slice(0, 8), ...shuffle([...junk])];
+  shuffle(q);
+  for (let i=1;i<q.length;i++) if (q[i].id === q[i-1].id){ const j = (i+2) % q.length; [q[i], q[j]] = [q[j], q[i]]; }
+  return q;
+}
+function resetRound(){
+  for (const f of flyers) { mouthGroup.remove(f.holder); f.tag.remove(); }
+  flyers.length = 0;
+  M.queue = makeQueue(); M.done = 0; M.energy = 0; M.stats = { ate:0, refused:0, missed:0, oops:0 }; M.gap = 0; M.running = false;
+  buildBar(); renderEnergy();
+}
+function mouthWorld(z=0.6){ return screenToWorld(face.mouth.x, face.mouth.y, z); }
+function faceWorldWidth(){ return face.width / W * viewSize(0).w; }
+
+function spawn(){
+  const food = M.queue.shift(); if (!food) return;
+  const holder = new THREE.Group(); const model = MODELS[food.id].clone(); holder.add(model); mouthGroup.add(holder);
+  const side = Math.random() < .5 ? -1 : 1;
+  const sx = side < 0 ? rand(.02, .25)*W : rand(.75, .98)*W, sy = rand(.05, .55)*H;
+  const S = screenToWorld(sx, sy, -28);
+  const E0 = mouthWorld();
+  const C = S.clone().lerp(E0, .5).add(V3(0, viewSize(0).h*.45, 0));
+  const tag = document.createElement('div'); tag.className = 'tag fly'; tag.textContent = food.name; tag.style.opacity = 0; tagsLayer.appendChild(tag);
+  flyers.push({ food, holder, model, S, C, u:0, dur: SPEEDS[speed], opened:false, phase:'fly', t:0, vel:V3(), spin:rand(1.5, 3)*(side), tag });
+  SFX.whoosh();
+}
+function foodScaleAtMouth(){ return clamp(faceWorldWidth() * .8, .9, 2.4) / 1.8; }
+
+function resolve(fl){
+  const good = fl.food.healthy;
+  if (good && fl.opened){ M.stats.ate++; M.energy++; feedback('ممم! لذيذ ومفيد', 'good'); SFX.munch(); SFX.chime(); fl.phase = 'eat'; burst(mouthWorld(1), 26, [0,1,5], .55); }
+  else if (!good && !fl.opened){ M.stats.refused++; M.energy++; feedback('رفضٌ ذكي!', 'good'); SFX.chime(); bounce(fl); }
+  else if (good && !fl.opened){ M.stats.missed++; feedback('فاتك طعام مفيد!', 'meh'); SFX.soft(); bounce(fl); }
+  else { M.stats.oops++; feedback('أوه! هذا غير صحي', 'bad'); SFX.munch(); SFX.buzz(); fl.phase = 'eat'; }
+  fl.t = 0; fl.tag.style.opacity = 0;
+  M.done++; renderEnergy();
+}
+function bounce(fl){
+  fl.phase = 'bounce';
+  const dir = fl.holder.position.x - mouthWorld().x >= 0 ? 1 : -1;
+  fl.vel.set(dir * rand(3.5, 5.5), rand(4, 6), rand(1, 3));
+}
+let bubbleTimer = 0;
+function feedback(text, kind){
+  const b = $('#bubble');
+  b.textContent = text; b.className = kind; b.hidden = false;
+  void b.offsetWidth; b.classList.add('show');
+  bubbleTimer = 1.3;
+}
+function updateMouth(dt, t, now){
+  const visible = faceVisible(now);
+  const vs = viewSize(0);
+
+  // chef hat on the student's head
+  if (visible){
+    const fw = faceWorldWidth();
+    const fore = screenToWorld(face.fore.x, face.fore.y, 0), chin = screenToWorld(face.chin.x, face.chin.y, 0);
+    const up = fore.clone().sub(chin).normalize();
+    const s = lerp(hat.visible ? hat.scale.x : fw * 1.3, fw * 1.3, .5);
+    hat.visible = true;
+    hat.scale.setScalar(s);
+    hat.position.copy(fore).addScaledVector(up, s * (HAT_H/2 - .12));
+    hat.rotation.set(0, 0, Math.atan2(-up.x, up.y));
+    // mouth ring
+    const ring = $('#ring'), d = face.width * .42;
+    ring.hidden = false; ring.style.width = ring.style.height = `${d}px`;
+    ring.style.transform = `translate(${face.mouth.x}px, ${face.mouth.y}px) translate(-50%,-50%)`;
+    ring.classList.toggle('open', face.open);
+  } else { hat.visible = false; $('#ring').hidden = true; }
+
+  // hints and countdown
+  const hint = $('#faceHint');
+  hint.hidden = !( $('#mouthCard').hidden && $('#endCard').hidden && !visible );
+  if (M.countdown > 0 && visible){
+    const before = Math.ceil(M.countdown);
+    M.countdown -= dt;
+    const after = Math.ceil(M.countdown);
+    const c = $('#count');
+    if (M.countdown <= 0){ c.hidden = true; M.running = true; M.gap = .3; say('هيا!'); }
+    else if (after !== before || c.hidden){ c.hidden = false; c.textContent = ar(after); c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); tone(440 + (3-after)*110, .18, 'triangle', .18); }
+  }
+
+  // spawn next
+  if (M.running && visible && !flyers.some(f => f.phase === 'fly')){
+    if (M.queue.length){ M.gap -= dt; if (M.gap <= 0) { spawn(); M.gap = .9; } }
+    else if (!flyers.length) endRound();
+  }
+
+  // flights
+  for (let i=flyers.length-1;i>=0;i--){
+    const fl = flyers[i];
+    if (fl.phase === 'fly'){
+      if (visible) fl.u = Math.min(1, fl.u + dt / fl.dur);
+      const E = mouthWorld();
+      const u = Math.pow(fl.u, 1.15), a = 1-u;
+      fl.holder.position.set(
+        a*a*fl.S.x + 2*a*u*fl.C.x + u*u*E.x,
+        a*a*fl.S.y + 2*a*u*fl.C.y + u*u*E.y,
+        a*a*fl.S.z + 2*a*u*fl.C.z + u*u*E.z);
+      fl.holder.scale.setScalar(foodScaleAtMouth() * (1 + .25*Math.sin(t*8)*(1-u)*0));
+      fl.model.rotation.y += dt * fl.spin; fl.model.rotation.z = Math.sin(t*3) * .25;
+      if (fl.u > .84 && face.open) fl.opened = true;
+      // name tag under the flying food
+      if (fl.u > .12){
+        const s = worldToScreen(fl.holder.position.clone().add(V3(0, -foodScaleAtMouth()*.95, 0)));
+        fl.tag.style.opacity = 1; fl.tag.style.transform = `translate(${s.x}px, ${s.y}px) translate(-50%, 0)`;
+      }
+      if (fl.u >= 1) resolve(fl);
+    } else if (fl.phase === 'eat'){
+      fl.t += dt;
+      const k = clamp(fl.t / .28, 0, 1);
+      fl.holder.position.lerp(mouthWorld(0.2), .35);
+      fl.holder.scale.setScalar(foodScaleAtMouth() * (1 - easeInOut(k)) + .0001);
+      if (k >= 1){ mouthGroup.remove(fl.holder); fl.tag.remove(); flyers.splice(i,1); }
+    } else if (fl.phase === 'bounce'){
+      fl.t += dt;
+      fl.vel.y -= 14*dt;
+      fl.holder.position.addScaledVector(fl.vel, dt);
+      fl.model.rotation.z += dt * 9 * Math.sign(fl.vel.x);
+      fl.holder.scale.multiplyScalar(1 - dt*.6);
+      if (fl.t > 1.3 || fl.holder.position.y < -vs.h){ mouthGroup.remove(fl.holder); fl.tag.remove(); flyers.splice(i,1); }
+    }
+  }
+
+  // feedback bubble above the head
+  if (bubbleTimer > 0){
+    bubbleTimer -= dt;
+    const b = $('#bubble');
+    const x = clamp(face.fore.x, W*.2, W*.8), y = clamp(face.fore.y - face.width*.75, H*.24, H*.9);
+    b.style.left = `${x}px`; b.style.top = `${y}px`;
+    if (bubbleTimer <= 0) b.hidden = true;
+  }
+}
+function endRound(){
+  M.running = false;
+  const score = M.stats.ate + M.stats.refused;
+  const stars = score >= ROUND - 1 ? 3 : score >= Math.ceil(ROUND*.6) ? 2 : 1;
+  [...$('#stars').children].forEach((s,i) => s.classList.toggle('on', i < stars));
+  $('#endHead').textContent = stars === 3 ? 'طاقة كاملة!' : stars === 2 ? 'عمل رائع!' : 'محاولة جميلة!';
+  $('#endStats').innerHTML = `<div class="g">صحي أُكِل: ${ar(M.stats.ate)}</div><div class="g">غير صحي رُفِض: ${ar(M.stats.refused)}</div>` + (M.stats.oops ? `<div class="r">غير صحي أُكِل: ${ar(M.stats.oops)}</div>` : '');
+  $('#endCard').hidden = false;
+  SFX.chime(); burst(V3(-4, 2.5, 1), 70); burst(V3(4, 2.5, 1), 70);
+  say($('#endHead').textContent);
+}
+async function prepareMouth(){
+  const btn = $('#btnMouthStart'), err = $('#mouthErr');
+  err.hidden = true;
+  if (SIM){ btn.disabled = false; btn.textContent = 'ابدأ الجولة'; return; }
+  if (!camReady){ btn.disabled = false; btn.textContent = 'شغّل الكاميرا'; err.hidden = false; err.textContent = 'هذا النمط يحتاج إلى الكاميرا ليرى فم الطالب.'; return; }
+  if (landmarker){ btn.disabled = false; btn.textContent = 'ابدأ الجولة'; return; }
+  btn.disabled = true; btn.textContent = 'نجهّز التعرّف على الوجه…';
+  try { await loadLandmarker(); if (mode === 'mouth'){ btn.disabled = false; btn.textContent = 'ابدأ الجولة'; } }
+  catch(e){ console.error(e); btn.disabled = false; btn.textContent = 'أعد المحاولة'; err.hidden = false; err.textContent = 'تعذّر تحميل التعرّف على الوجه. تأكّد من اتصال السبورة بالإنترنت ثم أعد المحاولة.'; }
+}
+$('#btnMouthStart').addEventListener('click', async () => {
+  audio();
+  if (!camReady && !SIM){
+    try { await startCamera(); $('#modes [data-mode="mouth"]').removeAttribute('aria-disabled'); }
+    catch(e){ const err = $('#mouthErr'); err.hidden = false; err.textContent = await explainCameraError(e); return; }
+    return prepareMouth();
+  }
+  if (!landmarker && !SIM) return prepareMouth();
+  $('#mouthCard').hidden = true; startCountdown();
+});
+$('#btnAgain').addEventListener('click', () => { $('#endCard').hidden = true; resetRound(); startCountdown(); });
+function startCountdown(){ resetRound(); M.countdown = 3; $('#count').hidden = true; }
+
+/* ================= modes ================= */
+function setMode(m){
+  if (m === mode) return;
+  if (selected) closeGuest();
+  mode = m;
+  document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('on', b.dataset.mode === m));
+  const intro = m === 'intro';
+  introGroup.visible = intro; mouthGroup.visible = !intro;
+  $('#introHud').hidden = !intro || !!selected; $('#focusCard').hidden = !intro || !selected;
+  guests.forEach(g => g.tag.style.opacity = intro ? g.tag.style.opacity : 0);
+  for (const id of ['#energy','#rules']) $(id).hidden = intro;
+  $('#mouthCard').hidden = intro; $('#endCard').hidden = true;
+  if (intro){ resetRound(); M.countdown = 0; $('#count').hidden = true; $('#faceHint').hidden = true; $('#ring').hidden = true; $('#bubble').hidden = true; hat.visible = false; }
+  else { resetRound(); prepareMouth(); }
+  SFX.pop();
+}
+document.querySelectorAll('#modes button').forEach(b => b.addEventListener('click', () => { audio(); setMode(b.dataset.mode); }));
+
+/* ================= tools ================= */
+const toast = msg => { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 6000); };
+$('#btnSound').addEventListener('click', e => { soundOn = !soundOn; e.currentTarget.setAttribute('aria-pressed', soundOn); if (!soundOn && 'speechSynthesis' in window) speechSynthesis.cancel(); else SFX.pop(); });
+$('#btnFull').addEventListener('click', () => { const d = document; (d.fullscreenElement ? d.exitFullscreen() : d.documentElement.requestFullscreen?.())?.catch?.(() => {}); });
+$('#btnSettings').addEventListener('click', e => { const s = $('#settings'); s.hidden = !s.hidden; e.currentTarget.setAttribute('aria-expanded', !s.hidden); if (!s.hidden) listCameras(); });
+$('#camSel').addEventListener('change', async e => { try { await startCamera(e.target.value); } catch(err){ toast(await explainCameraError(err)); } });
+$('#mirrorChk').addEventListener('change', e => { mirror = e.target.checked; document.body.classList.toggle('mirror', mirror); });
+document.querySelectorAll('#speedSeg button').forEach(b => b.addEventListener('click', () => { speed = b.dataset.speed; document.querySelectorAll('#speedSeg button').forEach(x => x.classList.toggle('on', x === b)); }));
+
+/* ================= start ================= */
+async function begin(withCam){
+  audio();
+  const err = $('#startErr'); err.hidden = true;
+  if (withCam){
+    const btn = $('#btnStart'); btn.disabled = true; btn.textContent = 'نشغّل الكاميرا…';
+    try { await startCamera(); }
+    catch(e){
+      console.warn(e);
+      err.textContent = await explainCameraError(e); err.hidden = false;
+      btn.disabled = false; btn.textContent = 'أعد المحاولة';
+      err.scrollIntoView({ block:'nearest', behavior:'smooth' });
+      return;
+    }
+  }
+  $('#start').hidden = true;
+  if (!withCam && !SIM) $('#modes [data-mode="mouth"]').setAttribute('aria-disabled', 'true');
+  say('أهلاً بكم! اليوم عندنا ضيوف من الطعام في صفّنا.');
+  // warm up face tracking quietly so «افتح فمك» starts fast
+  if (withCam) loadLandmarker().catch(() => {});
+}
+$('#btnStart').addEventListener('click', () => begin(true));
+$('#btnNoCam').addEventListener('click', () => begin(false));
+
+/* ================= loop ================= */
+resetRound(); updateIntroHud(); mouthGroup.visible = false;
+const clock = new THREE.Clock();
+function frame(now){
+  const dt = Math.min(clock.getDelta(), .1), t = clock.elapsedTime;
+  if (mode === 'intro') updateIntro(dt, t);
+  else { track(now); updateMouth(dt, t, now); }
+  updateConfetti(dt);
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.__hm = { setMode, guests, M, face, flyers, selectGuest, endRound };
+</script>
+</body>
+</html>
