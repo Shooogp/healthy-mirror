@@ -597,7 +597,10 @@ function loadRealModels(){
       gltf.scene.traverse(o => {
         if (!o.isMesh) return;
         const ms = Array.isArray(o.material) ? o.material : [o.material];
-        ms.forEach(m => { if ('envMapIntensity' in m) m.envMapIntensity = LIGHT.env; });
+        ms.forEach(m => {
+          if ('envMapIntensity' in m) m.envMapIntensity = LIGHT.env;
+          if (f.id === 'water'){ m.transparent = true; m.opacity = 0.86; m.roughness = 0.35; m.envMapIntensity = 0.9; }  // clear, glossy bottle
+        });
       });
       MODELS[f.id] = normalize(gltf.scene, 1.8);
       realLoaded.add(f.id);
