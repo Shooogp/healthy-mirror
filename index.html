@@ -369,14 +369,20 @@ const canvas = $('#scene');
 const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true, powerPreference:'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.NoToneMapping;   // keeps the food colors bright and true
+// Studio lighting for the realistic foods: a strong key light, a rim light that separates them from
+// the classroom behind, little ambient fill, so the models keep their contrast instead of looking flat.
+const LIGHT = { tone:'none', exposure:1.0, hemi:0.2, key:2.6, rim:1.6, fill:0.35, env:0.35 };
+renderer.toneMapping = LIGHT.tone === 'aces' ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
+renderer.toneMappingExposure = LIGHT.exposure;
 renderer.setClearColor(0x000000, 0);
 
 const scene = new THREE.Scene();
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
-scene.add(new THREE.HemisphereLight(0xfff6e6, 0x6b4a2e, 0.9));
-const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(-4, 8, 10); scene.add(sun);
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8a7a6a, LIGHT.hemi); scene.add(hemi);
+const keyLight = new THREE.DirectionalLight(0xfff4e8, LIGHT.key); keyLight.position.set(-5, 7, 9); scene.add(keyLight);
+const rimLight = new THREE.DirectionalLight(0xeaf4ff, LIGHT.rim); rimLight.position.set(6, 5, -8); scene.add(rimLight);
+const fillLight = new THREE.DirectionalLight(0xffffff, LIGHT.fill); fillLight.position.set(6, -2, 6); scene.add(fillLight);
 
 const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
 camera.position.set(0, 0, 12);
@@ -591,7 +597,7 @@ function loadRealModels(){
       gltf.scene.traverse(o => {
         if (!o.isMesh) return;
         const ms = Array.isArray(o.material) ? o.material : [o.material];
-        ms.forEach(m => { if ('envMapIntensity' in m) m.envMapIntensity = 1; });
+        ms.forEach(m => { if ('envMapIntensity' in m) m.envMapIntensity = LIGHT.env; });
       });
       MODELS[f.id] = normalize(gltf.scene, 1.8);
       realLoaded.add(f.id);
@@ -1144,7 +1150,7 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-window.__hm = { setMode, guests, M, face, flyers, selectGuest, endRound };
+window.__hm = { setMode, guests, M, face, flyers, selectGuest, endRound, renderer, hemi, keyLight, rimLight, fillLight, MODELS, THREE };
 </script>
 </body>
 </html>
