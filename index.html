@@ -375,6 +375,7 @@ const LIGHT = { tone:'none', exposure:1.0, hemi:0.2, key:2.6, rim:1.6, fill:0.35
 renderer.toneMapping = LIGHT.tone === 'aces' ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
 renderer.toneMappingExposure = LIGHT.exposure;
 renderer.setClearColor(0x000000, 0);
+renderer.autoClear = false;   // the frame loop clears once, then draws the hat and the foods in two passes
 
 const scene = new THREE.Scene();
 const pmrem = new THREE.PMREMGenerator(renderer);
@@ -914,7 +915,12 @@ function closeGuest(){
 }
 
 /* ---------- mouth mode: «افتح فمك» ---------- */
-const hat = new THREE.Group(); hat.add(HAT.clone()); hat.visible = false; mouthGroup.add(hat);
+// The chef hat lives in its own scene, drawn first; the foods are drawn after it on a cleared depth
+// buffer, so a flying food always passes in front of the hat, never behind it.
+const hatScene = new THREE.Scene();
+hatScene.environment = scene.environment;
+hatScene.add(hemi.clone(), keyLight.clone(), rimLight.clone(), fillLight.clone());
+const hat = new THREE.Group(); hat.add(HAT.clone()); hat.visible = false; hatScene.add(hat);
 const HAT_H = new THREE.Box3().setFromObject(HAT).getSize(V3()).y;   // hat height when its width is 1
 const flyers = [];
 const M = { running:false, queue:[], done:0, energy:0, stats:{ ate:0, refused:0, missed:0, oops:0 }, gap:0, countdown:0, waitingFace:false };
@@ -1149,11 +1155,13 @@ function frame(now){
   if (mode === 'intro') updateIntro(dt, t);
   else { track(now); updateMouth(dt, t, now); }
   updateConfetti(dt);
+  renderer.clear();
+  if (mode === 'mouth' && hat.visible){ renderer.render(hatScene, camera); renderer.clearDepth(); }
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-window.__hm = { setMode, guests, M, face, flyers, selectGuest, endRound, renderer, hemi, keyLight, rimLight, fillLight, MODELS, THREE };
+window.__hm = { setMode, guests, M, face, flyers, selectGuest, endRound, renderer, hemi, keyLight, rimLight, fillLight, MODELS, THREE, camera, hat };
 </script>
 </body>
 </html>
