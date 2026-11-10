@@ -35,9 +35,10 @@ button:focus-visible,select:focus-visible{outline:4px solid var(--saffron);outli
   radial-gradient(120% 80% at 50% 0%,#FFF4D9 0%,#F9E3B8 45%,#EBC98F 100%)}
 #bg::after{content:"";position:absolute;inset:auto 0 0 0;height:32%;
   background:repeating-linear-gradient(90deg,#D9A866 0 60px,#CF9C5A 60px 120px);opacity:.55}
-#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s;filter:brightness(var(--cam-bright,1))}
+#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s,transform .25s ease;
+  filter:brightness(var(--cam-bright,1));transform:scale(var(--cam-zoom,1))}
 body.has-cam #cam{opacity:1}
-body.mirror #cam{transform:scaleX(-1)}
+body.mirror #cam{transform:scaleX(-1) scale(var(--cam-zoom,1))}
 #scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
 #ui{position:fixed;inset:0;pointer-events:none}
 #ui > *{pointer-events:auto}
@@ -70,6 +71,14 @@ body.mirror #cam{transform:scaleX(-1)}
 .icon-btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
 .icon-btn svg{width:52%;height:52%}
 .icon-btn[aria-pressed="false"] .on,.icon-btn[aria-pressed="true"] .off{display:none}
+
+/* ---------- camera zoom (bottom corner, within reach on a tall board) ---------- */
+#zoomCtl{position:absolute;bottom:max(18px,2.6vmin);inset-inline-end:max(16px,2.2vmin);display:none;align-items:center;gap:8px;padding:6px;border-radius:999px}
+body.has-cam #zoomCtl{display:flex}
+#zoomCtl .icon-btn{width:clamp(44px,6.2vmin,66px);height:clamp(44px,6.2vmin,66px)}
+#zoomCtl .icon-btn:disabled{opacity:.35;transform:none;box-shadow:0 5px 0 var(--ink)}
+#zoomVal{min-width:3.2em;border:0;background:transparent;padding:.15em .2em;font-family:var(--font-display);font-weight:800;
+  font-size:clamp(17px,2.5vmin,28px);font-variant-numeric:tabular-nums;color:var(--ink);cursor:pointer}
 
 /* ---------- mode switch ---------- */
 #modes{position:absolute;bottom:max(18px,2.6vmin);left:50%;transform:translateX(-50%);display:flex;padding:6px;gap:6px;border-radius:999px}
@@ -201,6 +210,7 @@ body.mirror #cam{transform:scaleX(-1)}
 
 @media (max-width:640px){
   #brand{display:none}
+  #zoomCtl{bottom:calc(max(18px,2.6vmin) + 64px)}
   #introHud span{display:none}
   #introHud,#energy{top:calc(max(16px,2.2vmin) + 48px + 14px)}
   #introHud{white-space:nowrap}
@@ -242,6 +252,16 @@ body.mirror #cam{transform:scaleX(-1)}
     </button>
     <button class="icon-btn" id="btnSettings" aria-label="الإعدادات" title="الإعدادات" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+    </button>
+  </div>
+
+  <div id="zoomCtl" class="sticker" role="group" aria-label="تقريب صورة الكاميرا">
+    <button class="icon-btn" id="zoomOut" aria-label="تصغير الصورة" title="تصغير الصورة">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12h12"/></svg>
+    </button>
+    <button type="button" id="zoomVal" aria-label="إرجاع الحجم الأصلي" title="إرجاع الحجم الأصلي">×١</button>
+    <button class="icon-btn" id="zoomIn" aria-label="تكبير الصورة" title="تكبير الصورة">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12h12M12 6v12"/></svg>
     </button>
   </div>
 
@@ -350,6 +370,9 @@ const JAW_OPEN = 0.30, JAW_CLOSE = 0.18;               // mouth thresholds (jawO
 const SIM = new URLSearchParams(location.search).has('sim');
 const BRIGHT_KEY = 'healthy-mirror:cam-brightness';   // camera brightness saved on this board
 let camBright = 1;
+const ZOOMS = [1, 1.25, 1.5, 1.75, 2, 2.5, 3];        // camera zoom steps
+const ZOOM_KEY = 'healthy-mirror:cam-zoom';           // camera zoom saved on this board
+let camZoom = 1;
 
 const FOODS = [
   { id:'apple',  name:'تفاحة',       def:'التفاح',          kind:'طعام',  healthy:true,  why:'التفاح يمنح أجسامنا الفيتامينات والنشاط.' },
@@ -745,7 +768,7 @@ async function listCameras(){
 }
 function videoToScreen(nx, ny){
   const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
-  const s = Math.max(W/vw, H/vh), dw = vw*s, dh = vh*s;
+  const s = Math.max(W/vw, H/vh) * camZoom, dw = vw*s, dh = vh*s;   // zoom scales the picture about the screen centre
   const x = mirror ? 1 - nx : nx;
   return { x: (W - dw)/2 + x*dw, y: (H - dh)/2 + ny*dh };
 }
@@ -797,9 +820,17 @@ const roiCanvas = document.createElement('canvas'); roiCanvas.width = roiCanvas.
 const roiCtx = roiCanvas.getContext('2d');
 let lockWin = null, lockMiss = 0, scanIdx = 0, scanFor = '';
 let scanList = [];
-function buildScan(vw, vh){
-  // [centre x as a share of the width, centre y as a share of the height, side as a share of the height]
-  const list = [null];                                // null = the whole frame
+// the part of the camera frame shown on screen (it shrinks as the picture is zoomed in), in frame pixels
+function visibleRect(vw, vh){
+  const s = Math.max(W/vw, H/vh) * camZoom;
+  const w = Math.min(vw, W/s), h = Math.min(vh, H/s);
+  return { x:(vw - w)/2, y:(vh - h)/2, w, h };
+}
+function buildScan(vw, vh, key){
+  // windows inside the picture on screen:
+  // [centre x as a share of its width, centre y as a share of its height, side as a share of its height]
+  const R = visibleRect(vw, vh);
+  const list = [null];                                // null = the whole picture on screen
   const rows = [
     [.8,  [.5, .3, .7], [.5]],
     [.55, [.5, .36, .64, .22, .78], [.45]],
@@ -807,8 +838,9 @@ function buildScan(vw, vh){
     [.27, [.5, .43, .57, .36, .64], [.4, .58]],
   ];
   for (const [s, xs, ys] of rows) for (const cy of ys) for (const cx of xs) list.push([cx, cy, s]);
-  scanList = list.map(w => w && toWin(w[0]*vw, w[1]*vh, w[2]*vh, vw, vh));
-  scanFor = vw + 'x' + vh; scanIdx = 0;
+  const whole = (() => { const side = Math.max(R.w, R.h); return { x: R.x + (R.w - side)/2, y: R.y + (R.h - side)/2, s: side }; })();
+  scanList = list.map(w => w ? toWin(R.x + w[0]*R.w, R.y + w[1]*R.h, w[2]*R.h, vw, vh) : whole);
+  scanFor = key; scanIdx = 0;
 }
 function toWin(cx, cy, side, vw, vh){
   side = clamp(side, 32, Math.min(vw, vh));
@@ -821,26 +853,33 @@ function track(now){
   lastVideoTime = video.currentTime; lastDetect = now;
   const vw = video.videoWidth, vh = video.videoHeight;
   if (!vw || !vh) return;
-  if (scanFor !== vw + 'x' + vh){ buildScan(vw, vh); lockWin = null; }
+  const key = `${vw}x${vh}/${W}x${H}/${camZoom}`;
+  if (scanFor !== key){ buildScan(vw, vh, key); lockWin = null; }
   // the window for this detection: around the face once found, otherwise the next one in turn
   let win = lockWin;
   if (!win){ win = scanList[scanIdx % scanList.length]; scanIdx++; }
-  if (!win) win = vw >= vh ? { x: 0, y: (vh - vw)/2, s: vw } : { x: (vw - vh)/2, y: 0, s: vh };   // whole frame, letterboxed
   roiCtx.filter = 'none'; roiCtx.fillStyle = '#000'; roiCtx.fillRect(0, 0, ROI, ROI);
   // the face model sees the picture at the same brightness as the class does
   roiCtx.filter = camBright === 1 ? 'none' : `brightness(${camBright})`;
   roiCtx.drawImage(video, win.x, win.y, win.s, win.s, 0, 0, ROI, ROI);
   let res; try { res = landmarker.detectForVideo(roiCanvas, now); } catch(e){ return; }
-  if (!res?.faceLandmarks?.length){
+  if (res?.faceLandmarks?.length) everFound = true;
+  // landmarks come back as shares of the window; turn them into shares of the camera frame,
+  // and keep only faces inside the picture on screen (a zoomed-in picture hides the edges)
+  const R = visibleRect(vw, vh);
+  let best = -1, bw = 0, lm = null;
+  (res?.faceLandmarks || []).forEach((raw, i) => {
+    const f = raw.map(p => ({ x: (win.x + p.x*win.s) / vw, y: (win.y + p.y*win.s) / vh }));
+    const cx = (f[10].x + f[152].x)/2*vw, cy = (f[10].y + f[152].y)/2*vh;
+    if (cx < R.x || cx > R.x + R.w || cy < R.y || cy > R.y + R.h) return;
+    const w = Math.abs(f[454].x - f[234].x); if (w > bw){ bw = w; best = i; lm = f; }
+  });
+  if (!lm){
     if (lockWin && ++lockMiss > 6){ lockWin = null; scanIdx = 0; }
     if (!everFound){ noFaceSince ||= now; if (now - noFaceSince > 12000) fallBackToCPU(); }
     return;
   }
-  everFound = true; lockMiss = 0;
-  let best = 0, bw = 0;
-  res.faceLandmarks.forEach((lm, i) => { const w = Math.abs(lm[454].x - lm[234].x); if (w > bw){ bw = w; best = i; } });
-  // landmarks come back as shares of the window; turn them into shares of the camera frame
-  const lm = res.faceLandmarks[best].map(p => ({ x: (win.x + p.x*win.s) / vw, y: (win.y + p.y*win.s) / vh }));
+  lockMiss = 0;
   // next time, look at a square about three faces wide centred on this face
   const fw = Math.hypot((lm[454].x - lm[234].x)*vw, (lm[454].y - lm[234].y)*vh);
   lockWin = toWin((lm[10].x + lm[152].x)/2*vw, (lm[10].y + lm[152].y)/2*vh, fw*3.2, vw, vh);
@@ -1203,6 +1242,21 @@ function setBright(v, save){
 try { const saved = parseFloat(localStorage.getItem(BRIGHT_KEY)); if (saved) setBright(saved, false); } catch(e){}
 $('#brightRange').addEventListener('input', e => setBright(e.target.value / 100, true));
 $('#brightReset').addEventListener('click', () => setBright(1, true));
+// camera zoom: enlarges the picture about the screen centre; also kept on this board
+function setZoom(z, save){
+  camZoom = ZOOMS.reduce((a, b) => Math.abs(b - z) < Math.abs(a - z) ? b : a);
+  document.documentElement.style.setProperty('--cam-zoom', camZoom);
+  $('#zoomVal').textContent = '×' + ar(String(camZoom)).replace('.', '٫');
+  $('#zoomOut').disabled = camZoom === ZOOMS[0];
+  $('#zoomIn').disabled = camZoom === ZOOMS[ZOOMS.length - 1];
+  lockWin = null;                                     // look for the face again in the new picture
+  if (save) { try { localStorage.setItem(ZOOM_KEY, String(camZoom)); } catch(e){} }
+}
+try { const saved = parseFloat(localStorage.getItem(ZOOM_KEY)); setZoom(saved || 1, false); } catch(e){ setZoom(1, false); }
+const zoomStep = d => { audio(); SFX.pop(); setZoom(ZOOMS[clamp(ZOOMS.indexOf(camZoom) + d, 0, ZOOMS.length - 1)], true); };
+$('#zoomIn').addEventListener('click', () => zoomStep(1));
+$('#zoomOut').addEventListener('click', () => zoomStep(-1));
+$('#zoomVal').addEventListener('click', () => { audio(); SFX.pop(); setZoom(1, true); });
 document.querySelectorAll('#speedSeg button').forEach(b => b.addEventListener('click', () => { speed = b.dataset.speed; document.querySelectorAll('#speedSeg button').forEach(x => x.classList.toggle('on', x === b)); }));
 
 /* ================= start ================= */
