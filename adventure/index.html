@@ -1,0 +1,1503 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><style>[hidden]{display:none!important}body{margin:0}</style></head><body><title>مغامرة الأبطال في مملكة الغذاء</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Lalezar&display=swap">
+<style>
+/* Layout: one 16:9 storybook stage (1600×900) scaled to fit the board, parchment captions at the foot, seven-star strip at the head. */
+:root{
+  --night:#1a1140;
+  --night-2:#2c1d63;
+  --royal:#4b2a8c;
+  --gold:#f3b631;
+  --gold-deep:#b97a0c;
+  --parch:#fff3d4;
+  --parch-edge:#e9cf95;
+  --ink:#2b1a0d;
+  --leaf:#1f9a57;
+  --ember:#e0572b;
+  --white:#ffffff;
+  --shadow:rgba(20,8,40,.45);
+  --silver:#b9c3cf;
+  --bronze:#c77c3c;
+  --f-display:'Lalezar','Baloo Bhaijaan 2',Tahoma,'Segoe UI',sans-serif;
+  --f-body:'Baloo Bhaijaan 2',Tahoma,'Segoe UI',sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--white);font-family:var(--f-body);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+img{-webkit-user-drag:none;user-select:none;pointer-events:none}
+#viewport{position:fixed;inset:0;background:radial-gradient(120% 90% at 50% 40%,var(--night-2),var(--night));touch-action:none;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;border-radius:14px;background:var(--night);box-shadow:0 20px 60px var(--shadow);direction:rtl}
+#bg{position:absolute;inset:-3%;background-size:cover;background-position:center;transition:opacity .6s}
+#bg.kb{animation:kb 22s ease-in-out infinite alternate}
+@keyframes kb{from{transform:scale(1) translate(0,0)}to{transform:scale(1.07) translate(-1.2%,-.8%)}}
+#bg.dim{filter:brightness(.55) saturate(1.05)}
+#scene{position:absolute;inset:0}
+#video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;z-index:5}
+#flash{position:absolute;inset:0;background:var(--white);opacity:0;pointer-events:none;z-index:60;transition:opacity .35s}
+#alarm{position:absolute;inset:0;pointer-events:none;z-index:4;opacity:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(255,40,40,.55))}
+#alarm.on{animation:alarm .7s ease-in-out infinite alternate}
+@keyframes alarm{from{opacity:0}to{opacity:1}}
+canvas#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:55}
+
+/* actors and props */
+.actor{position:absolute;translate:-50% 0;transform-origin:50% 100%;filter:drop-shadow(0 16px 12px rgba(0,0,0,.35));transition:left .9s cubic-bezier(.3,.8,.3,1),bottom .9s cubic-bezier(.3,.8,.3,1),opacity .5s;z-index:10}
+.actor.flip{rotate:y 180deg}
+.actor.talk{animation:talk .42s ease-in-out infinite alternate}
+@keyframes talk{from{scale:1 1}to{scale:1.018 .985}}
+.actor.sleepy{animation:sleepy 2.6s ease-in-out infinite;filter:drop-shadow(0 16px 12px rgba(0,0,0,.35)) saturate(.7)}
+@keyframes sleepy{0%,100%{rotate:-2deg}50%{rotate:3deg}}
+.actor.hop{animation:hop .55s ease-in-out 3}
+@keyframes hop{0%,100%{translate:-50% 0}50%{translate:-50% -46px}}
+.actor.walk{animation:walk .45s ease-in-out infinite}
+@keyframes walk{0%,100%{translate:-50% 0;rotate:-2deg}50%{translate:-50% -14px;rotate:2deg}}
+.actor.tired{animation:tired 1.6s ease-in-out infinite}
+@keyframes tired{0%,100%{scale:1 1}50%{scale:1.01 .97}}
+.actor.glow{filter:drop-shadow(0 0 26px rgba(255,214,90,.95)) drop-shadow(0 16px 12px rgba(0,0,0,.3))}
+.prop{position:absolute;translate:-50% -50%;filter:drop-shadow(0 12px 10px rgba(0,0,0,.32));transition:left .8s cubic-bezier(.3,.8,.3,1),top .8s cubic-bezier(.3,.8,.3,1),width .6s,opacity .5s,scale .5s;z-index:12}
+.prop.float{animation:float 2.4s ease-in-out infinite}
+@keyframes float{0%,100%{translate:-50% -50%}50%{translate:-50% calc(-50% - 16px)}}
+.prop.glowing{filter:drop-shadow(0 0 30px rgba(255,220,110,1)) drop-shadow(0 0 60px rgba(255,200,60,.7))}
+.prop.shake{animation:shake .5s ease-in-out}
+@keyframes shake{0%,100%{rotate:0deg}20%{rotate:-8deg}40%{rotate:7deg}60%{rotate:-5deg}80%{rotate:4deg}}
+.prop.spin{animation:spin .25s linear infinite}
+@keyframes spin{0%{rotate:-4deg}50%{rotate:4deg}100%{rotate:-4deg}}
+.pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes pop{from{scale:0}to{scale:1}}
+
+/* draggable items */
+.item{position:absolute;translate:-50% -50%;cursor:grab;z-index:20;filter:drop-shadow(0 10px 8px rgba(0,0,0,.35));transition:scale .15s,filter .15s;touch-action:none}
+.item img{width:100%;height:100%;object-fit:contain;display:block}
+.item.home{transition:left .45s cubic-bezier(.3,1.3,.5,1),top .45s cubic-bezier(.3,1.3,.5,1),width .4s,height .4s,scale .15s}
+.item.dragging{scale:1.16;z-index:50;cursor:grabbing;filter:drop-shadow(0 22px 16px rgba(0,0,0,.45))}
+.item.placed{cursor:default;pointer-events:none;transition:left .4s,top .4s,width .4s,height .4s}
+.item.tap{cursor:pointer}
+.item.wrong{animation:shake .45s}
+.item.bye{transition:left .7s ease-in,top .7s ease-in,opacity .7s,rotate .7s;opacity:0;rotate:200deg;pointer-events:none}
+.target{position:absolute;translate:-50% -50%;z-index:15;transition:filter .2s,scale .2s}
+.target img{width:100%;display:block}
+.target.hot{filter:drop-shadow(0 0 22px rgba(255,236,140,1));scale:1.05}
+.target.done{filter:drop-shadow(0 0 26px rgba(80,230,140,.95))}
+.tag{position:absolute;translate:-50% 0;font-family:var(--f-display);font-size:34px;padding:6px 26px 2px;border-radius:999px;color:var(--white);white-space:nowrap;z-index:16;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.tag.green{background:var(--leaf)}
+.tag.orange{background:var(--ember)}
+.tag.purple{background:var(--royal)}
+.check{position:absolute;translate:-50% -50%;width:84px;height:84px;border-radius:50%;background:var(--leaf);display:grid;place-items:center;z-index:30;box-shadow:0 0 0 6px var(--white),0 8px 16px rgba(0,0,0,.3)}
+.check svg{width:52px;height:52px}
+.medal{position:absolute;translate:-50% -50%;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-size:54px;line-height:1;padding-top:8px;color:var(--ink);z-index:31;box-shadow:0 0 0 6px var(--white),0 10px 18px rgba(0,0,0,.35)}
+.medal.r1{background:radial-gradient(circle at 35% 30%,#fff3b0,var(--gold))}
+.medal.r2{background:radial-gradient(circle at 35% 30%,#ffffff,var(--silver))}
+.medal.r3{background:radial-gradient(circle at 35% 30%,#ffd9b3,var(--bronze))}
+.counter{position:absolute;translate:-50% 0;z-index:30;display:flex;gap:10px}
+.counter i{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.35);border:3px solid var(--white);display:block}
+.counter i.on{background:var(--gold);border-color:var(--gold-deep)}
+
+/* chrome: hud, teacher bar, caption, cta */
+#hud{position:absolute;top:16px;left:50%;translate:-50% 0;display:flex;gap:8px;padding:8px 18px;background:rgba(26,17,64,.55);border:2px solid rgba(243,182,49,.6);border-radius:999px;z-index:40;backdrop-filter:blur(6px)}
+#hud .slot{width:56px;height:56px;position:relative;display:grid;place-items:center}
+#hud .slot img{width:52px;opacity:.22;filter:grayscale(1) brightness(1.6);transition:opacity .4s,filter .4s,scale .4s}
+#hud .slot.on img{opacity:1;filter:none;scale:1.08}
+#hud .slot .flag{position:absolute;width:24px;height:16px;bottom:10px;opacity:0;transition:opacity .4s}
+#hud .slot.on .flag{opacity:1}
+#tbar{position:absolute;top:16px;left:16px;display:flex;gap:10px;z-index:45}
+.tb{width:62px;height:62px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(26,17,64,.6);color:var(--white);display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(6px);transition:background .2s,scale .15s}
+.tb:hover{background:rgba(75,42,140,.85)}
+.tb:active{scale:.92}
+.tb:focus-visible,.cta:focus-visible,.med:focus-visible,.opt:focus-visible{outline:4px solid var(--gold);outline-offset:3px}
+.tb svg{width:30px;height:30px}
+.tb.off{opacity:.55}
+#caption{pointer-events:none;position:absolute;bottom:18px;left:50%;translate:-50% 0;width:1180px;min-height:118px;display:flex;align-items:center;gap:22px;padding:14px 30px 14px 24px;background:var(--parch);color:var(--ink);border:4px solid var(--parch-edge);border-radius:30px;box-shadow:0 10px 0 rgba(0,0,0,.18),0 18px 40px var(--shadow);z-index:42;opacity:0;translate:-50% 30px;transition:opacity .3s,translate .3s}
+#caption.show{opacity:1;translate:-50% 0}
+#caption .av{flex:0 0 auto;width:92px;height:92px;border-radius:50%;overflow:hidden;background:var(--gold);border:4px solid var(--gold-deep)}
+#caption .av img{width:100%;height:150%;object-fit:cover;object-position:50% 4%}
+#caption .av.narr{background:var(--royal);display:grid;place-items:center}
+#caption .who{font-family:var(--f-display);font-size:28px;color:var(--royal);line-height:1.1}
+#caption .txt{font-size:36px;font-weight:700;line-height:1.35;text-wrap:balance}
+.cta{position:absolute;left:50%;bottom:170px;translate:-50% 0;z-index:44;font-family:var(--f-display);font-size:50px;color:var(--ink);background:linear-gradient(180deg,#ffd76a,var(--gold));border:none;border-radius:999px;padding:16px 64px 8px;box-shadow:0 10px 0 var(--gold-deep),0 18px 30px var(--shadow);cursor:pointer;animation:breathe 1.6s ease-in-out infinite}
+.cta:active{translate:-50% 6px;box-shadow:0 4px 0 var(--gold-deep)}
+@keyframes breathe{0%,100%{scale:1}50%{scale:1.05}}
+.card{position:absolute;left:50%;top:120px;translate:-50% 0;width:1080px;padding:26px 40px 30px;background:var(--parch);color:var(--ink);border:4px solid var(--parch-edge);border-radius:28px;z-index:43;box-shadow:0 18px 40px var(--shadow)}
+.card .lbl{font-family:var(--f-display);font-size:28px;color:var(--white);background:var(--royal);display:inline-block;padding:4px 22px 0;border-radius:999px}
+.card h3{margin:14px 0 6px;font-family:var(--f-body);font-weight:800;font-size:44px;line-height:1.3;text-wrap:balance}
+.card p{margin:0;font-size:30px;line-height:1.4;color:#5a4330}
+
+/* title and map */
+.title{position:absolute;left:50%;top:150px;translate:-50% 0;text-align:center;z-index:30;width:1300px}
+.title .kick{font-family:var(--f-body);font-weight:700;font-size:34px;color:var(--gold);letter-spacing:.5px}
+.title h1{margin:6px 0 0;font-family:var(--f-display);font-weight:400;font-size:112px;line-height:1.05;color:var(--white);text-shadow:0 6px 0 var(--royal),0 14px 30px rgba(0,0,0,.5);text-wrap:balance}
+.title .sub{margin-top:14px;font-size:32px;color:var(--parch)}
+.med{position:absolute;translate:-50% -50%;width:176px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;z-index:30;background:none;border:none;padding:0;color:inherit;font:inherit}
+.med .ring{width:150px;height:150px;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 35%,#fff6dc,#f0c46a);border:7px solid var(--gold);box-shadow:0 8px 0 var(--gold-deep),0 14px 26px var(--shadow);position:relative;transition:scale .2s}
+.med .ring img{position:absolute;left:50%;top:6%;translate:-50% 0;height:210%;width:auto}
+.med .num{position:absolute;top:-6px;right:-6px;width:50px;height:50px;border-radius:50%;background:var(--royal);color:var(--white);font-family:var(--f-display);font-size:30px;display:grid;place-items:center;border:3px solid var(--white);z-index:2}
+.med .name{font-family:var(--f-display);font-size:26px;line-height:1.1;background:var(--parch);color:var(--ink);padding:5px 16px 1px;border-radius:999px;border:3px solid var(--parch-edge);white-space:nowrap}
+.med.next .ring{animation:nextglow 1.2s ease-in-out infinite alternate}
+@keyframes nextglow{from{box-shadow:0 8px 0 var(--gold-deep),0 0 0 0 rgba(255,215,90,.0)}to{box-shadow:0 8px 0 var(--gold-deep),0 0 0 18px rgba(255,215,90,.45)}}
+.med.done .ring{filter:saturate(.75)}
+.med .badge{position:absolute;bottom:34px;left:6px;width:62px;z-index:3;filter:drop-shadow(0 4px 4px rgba(0,0,0,.4))}
+.med:active .ring{scale:.94}
+.med.final .ring{background:radial-gradient(circle,#ffe9a8,#e0a325)}
+.med.onmap{width:150px}
+.med.onmap .ring{width:124px;height:124px;border-width:6px}
+.med.onmap .num{position:absolute;top:-16px;right:-6px;width:62px;height:62px;font-size:40px;padding-top:6px;background:var(--ember);border:4px solid var(--white);box-shadow:0 6px 12px var(--shadow);z-index:4}
+.med.onmap .name{font-size:23px}
+.med.onmap .badge{bottom:30px;left:-4px;width:54px}
+.med.final .ring img{height:84%;top:10%}
+.med .ring img.f-nakhla{translate:-30% 0}
+#caption .av img.f-nakhla{object-position:30% 4%}
+.med.locked{opacity:.55}
+
+/* quiz */
+.opts{position:absolute;left:50%;top:420px;translate:-50% 0;display:flex;gap:36px;z-index:43}
+.opt{width:330px;min-height:300px;background:var(--parch);border:5px solid var(--parch-edge);border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px;cursor:pointer;box-shadow:0 10px 0 rgba(0,0,0,.2);color:var(--ink);font:inherit;transition:scale .15s}
+.opt:active{scale:.96}
+.opt .pics{display:flex;align-items:flex-end;justify-content:center;gap:4px;height:170px}
+.opt .pics img{max-height:170px;max-width:150px;object-fit:contain}
+.opt .pics.three img{max-width:96px;max-height:120px}
+.opt .ot{font-size:30px;font-weight:800;line-height:1.25;text-align:center}
+.opt.right{border-color:var(--leaf);box-shadow:0 0 0 8px rgba(31,154,87,.5)}
+.opt.no{animation:shake .45s}
+.banner{position:absolute;left:50%;top:120px;translate:-50% 0;z-index:46;text-align:center;width:1400px}
+.banner h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:96px;line-height:1.1;color:var(--gold);text-shadow:0 6px 0 var(--royal),0 16px 30px rgba(0,0,0,.55)}
+.banner p{margin:10px auto 0;font-size:40px;font-weight:800;color:var(--white);text-shadow:0 3px 10px rgba(0,0,0,.6);text-wrap:balance}
+.note{position:absolute;left:24px;bottom:150px;z-index:41;background:rgba(26,17,64,.72);color:var(--parch);border-radius:18px;padding:10px 18px;font-size:22px;max-width:360px;line-height:1.35;border:2px solid rgba(243,182,49,.5)}
+/* prior learning: lost animals */
+#hud{transition:opacity .4s}
+#stage.pre #hud{opacity:0;pointer-events:none}
+#stage.pre #bg{filter:brightness(.5) blur(3px)}
+.pl-head{position:absolute;top:20px;left:50%;translate:-50% 0;display:flex;align-items:center;gap:18px;z-index:30;white-space:nowrap}
+.pl-head .kick{font-family:var(--f-display);font-size:30px;background:var(--ember);color:var(--white);padding:7px 24px 1px;border-radius:999px;box-shadow:0 5px 0 rgba(0,0,0,.25)}
+.pl-head h1{margin:0;font-family:var(--f-display);font-weight:400;font-size:70px;line-height:1;color:var(--white);text-shadow:0 5px 0 var(--royal),0 12px 26px rgba(0,0,0,.5)}
+.pl-timer{position:absolute;top:12px;right:20px;width:118px;height:118px;z-index:30;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;background:none;border:none;padding:0;color:var(--white);font:inherit}
+.pl-timer svg{position:absolute;inset:0;rotate:-90deg}
+.pl-timer .tr{fill:rgba(26,17,64,.78);stroke:rgba(255,255,255,.22);stroke-width:10}
+.pl-timer .tp{fill:none;stroke:var(--gold);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .25s linear,stroke .3s}
+.pl-timer b{position:relative;font-family:var(--f-display);font-weight:400;font-size:40px;line-height:1;padding-top:8px;direction:ltr}
+.pl-timer small{position:relative;font-size:17px;font-weight:700;color:var(--parch);line-height:1}
+.pl-timer.paused{opacity:.6}
+.pl-timer.end .tp{stroke:var(--ember)}
+.pl-timer.end{animation:breathe 1s ease-in-out infinite}
+.hab{position:absolute;top:124px;width:460px;height:430px;translate:-50% 0;border-radius:34px;background-size:cover;background-position:center;border:7px solid var(--parch);box-shadow:0 10px 0 rgba(0,0,0,.22),0 20px 40px var(--shadow);z-index:8;transition:scale .2s,box-shadow .25s,border-color .25s}
+.hab .nm{position:absolute;left:50%;bottom:-27px;translate:-50% 0;font-family:var(--f-display);font-size:40px;line-height:1.2;padding:6px 36px 0;border-radius:999px;color:var(--white);border:4px solid var(--parch);box-shadow:0 6px 0 rgba(0,0,0,.25);white-space:nowrap}
+.hab.desert .nm{background:#d4801a}
+.hab.sea .nm{background:#1b86c9}
+.hab.forest .nm{background:var(--leaf)}
+.hab.hot{scale:1.03;border-color:#ffe27a;box-shadow:0 0 0 9px rgba(255,226,122,.6),0 20px 40px var(--shadow)}
+.hab.done{border-color:#8ff0b6;box-shadow:0 0 0 9px rgba(80,230,140,.55),0 20px 40px var(--shadow)}
+.hab.no{border-color:#ff7a6b;animation:habno .45s}
+@keyframes habno{0%,100%{rotate:0deg}25%{rotate:-1.3deg}75%{rotate:1.3deg}}
+.pl-tray{position:absolute;left:50%;bottom:20px;translate:-50% 0;width:1440px;height:250px;border-radius:40px;background:rgba(26,17,64,.55);border:3px dashed rgba(243,182,49,.7);z-index:6;transition:opacity .5s}
+.pl-tray .lbl{position:absolute;top:-24px;left:974px;translate:-50% 0;font-family:var(--f-display);font-size:30px;background:var(--royal);color:var(--white);padding:6px 24px 0;border-radius:999px;border:3px solid rgba(243,182,49,.8)}
+.item .qm{position:absolute;top:-10px;right:0;width:56px;height:56px;border-radius:50%;background:var(--white);color:var(--royal);font-family:var(--f-display);font-size:40px;line-height:1;display:grid;place-items:center;padding-top:8px;box-shadow:0 4px 10px rgba(0,0,0,.3);animation:qm 1.4s ease-in-out infinite}
+@keyframes qm{0%,100%{translate:0 0}50%{translate:0 -8px}}
+.item.lost img{transform-origin:50% 100%;animation:lost 2.4s ease-in-out infinite}
+@keyframes lost{0%,100%{rotate:-3deg}50%{rotate:3deg}}
+.item.placed.swim img{animation:swim 3.4s ease-in-out infinite}
+@keyframes swim{0%,100%{translate:18px 0;rotate:-3deg}50%{translate:-18px -10px;rotate:3deg}}
+.item.placed.happy img{transform-origin:50% 100%;animation:happy .5s ease-in-out 3,bob 2.6s ease-in-out 1.5s infinite}
+@keyframes happy{0%,100%{translate:0 0}50%{translate:0 -40px}}
+@keyframes bob{0%,100%{scale:1 1}50%{scale:1.02 .98}}
+.card.low{top:auto;bottom:100px;padding:20px 40px 22px}
+.card.low h3{margin:10px 0 2px;font-size:42px}
+.card .qrow{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.card .reveal{font-family:var(--f-display);font-size:28px;line-height:1.2;background:var(--leaf);color:var(--white);border:none;border-radius:999px;padding:6px 26px 0;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.card .reveal:active{translate:0 3px;box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.card .ans{display:none;color:#17713f;font-weight:800}
+.card.open .ans{display:block}
+#stage.pre .cta{bottom:14px;font-size:40px;padding:11px 54px 5px}
+#stage.lowcta .cta{bottom:22px}
+/* station 6: the healthy-food mirror */
+.mr-panel{position:absolute;left:50%;top:250px;translate:-50% 0;width:900px;box-sizing:border-box;padding:24px 44px 34px;background:var(--parch);color:var(--ink);border:5px solid var(--parch-edge);border-radius:30px;z-index:30;text-align:center;box-shadow:0 18px 40px var(--shadow)}
+.mr-panel img{width:190px;margin:-130px auto 4px;display:block;filter:drop-shadow(0 10px 14px rgba(0,0,0,.35))}
+.mr-panel h3{margin:0 0 8px;font-family:var(--f-display);font-weight:400;font-size:46px;line-height:1.2;color:var(--royal)}
+.mr-panel p{margin:0 0 20px;font-size:30px;font-weight:700;line-height:1.45;text-wrap:balance}
+.mr-again{font-family:var(--f-display);font-size:30px;line-height:1.2;background:var(--royal);color:var(--white);border:none;border-radius:999px;padding:10px 34px 4px;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.mr-again input{display:none}
+label.mr-again{display:inline-block}
+.mr-again:active{translate:0 3px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.mr-frame{position:absolute;left:20px;top:100px;width:1560px;height:680px;box-sizing:border-box;border:5px solid var(--parch-edge);border-radius:24px;background:var(--white);z-index:20}
+.med.item .ring img{height:66%;top:17%}
+
+/* station 8: the heroes' maze */
+.mz-svg{position:absolute;left:22px;top:106px;width:1110px;height:780px;z-index:7;filter:drop-shadow(0 14px 26px rgba(0,0,0,.45))}
+.mz-door{cursor:pointer}
+.mz-door .leaf{transform-box:fill-box;transform-origin:50% 50%;transition:transform .35s ease}
+.mz-door.open .leaf{transform:scaleX(.08)}
+.mz-door .wall{opacity:0;transition:opacity .25s}
+.mz-door.bad .wall{opacity:1}
+.mz-door.bad .badge,.mz-door.bad text{opacity:0}
+.mz-door .badge{transform-box:fill-box;transform-origin:50% 50%}
+.mz-gate:not(.active) .mz-door{pointer-events:none}
+.mz-gate:not(.active):not(.done) .mz-door{opacity:.5}
+.mz-gate.active .mz-door:not(.bad) .badge{animation:mzpulse 1.2s ease-in-out infinite}
+@keyframes mzpulse{50%{transform:scale(1.18)}}
+.mz-gate.done .bar{fill:#5cb96c}
+.mz-gate.done .num{fill:var(--leaf)}
+.mz-star{transform-box:fill-box;transform-origin:50% 50%;animation:mzstar 1.8s ease-in-out infinite}
+@keyframes mzstar{50%{transform:scale(1.1)}}
+.mz-goal.won .mz-star{animation:mzwon .6s ease-in-out 3}
+@keyframes mzwon{50%{transform:scale(1.45) rotate(12deg)}}
+.mz-tok{position:absolute;width:90px;height:90px;translate:-50% -50%;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 35%,#fff6dc,#f0c46a);border:6px solid var(--gold);box-shadow:0 6px 0 var(--gold-deep),0 10px 18px rgba(0,0,0,.45);z-index:22}
+.mz-tok img{position:absolute;left:50%;top:6%;translate:-50% 0;height:210%;width:auto}
+.mz-tok.walk{animation:mzbob .3s ease-in-out infinite alternate}
+@keyframes mzbob{to{margin-top:-7px}}
+.mz-tok.bump{animation:shake .45s}
+.mz-panel{box-sizing:border-box;position:absolute;left:1146px;top:106px;width:438px;height:780px;background:var(--parch);color:var(--ink);border:5px solid var(--parch-edge);border-radius:30px;box-shadow:0 14px 30px var(--shadow);z-index:8;padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px}
+.mz-steps{display:flex;gap:6px}
+.mz-steps .st{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:17px;font-weight:800;color:#8b7355;padding:7px 2px 5px;border-radius:14px;background:#f4e3b8;line-height:1.1;text-align:center;white-space:nowrap}
+.mz-steps .st b{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#d9c08a;color:var(--white);font-family:var(--f-display);font-weight:400;font-size:21px;padding-top:4px}
+.mz-steps .st.on{background:var(--c);color:var(--white)}
+.mz-steps .st.on b{background:var(--white);color:var(--c)}
+.mz-steps .st.ok{color:var(--leaf)}
+.mz-steps .st.ok b{background:var(--leaf)}
+.mz-lvl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mz-lvl .no{font-family:var(--f-display);font-size:30px;color:var(--royal);line-height:1.2}
+.mz-lvl .ty{font-family:var(--f-display);font-size:26px;line-height:1.2;color:var(--white);background:var(--c);padding:4px 18px 0;border-radius:999px}
+.mz-q{margin:0;font-weight:800;font-size:34px;line-height:1.35;text-wrap:balance}
+.mz-opts{display:flex;flex-direction:column;gap:12px;margin-top:auto}
+.mz-opt{box-sizing:border-box;display:flex;align-items:center;gap:12px;min-height:116px;padding:10px 14px;background:var(--white);border:4px solid #ecd9a8;border-radius:22px;cursor:pointer;font:inherit;color:var(--ink);text-align:right;box-shadow:0 6px 0 rgba(0,0,0,.12);transition:scale .15s,opacity .3s}
+.mz-opt:active{scale:.97}
+.mz-opt .lt{flex:0 0 auto;width:54px;height:54px;border-radius:50%;background:var(--c);color:var(--white);font-family:var(--f-display);font-size:32px;display:grid;place-items:center;padding-top:6px;box-shadow:0 4px 0 rgba(0,0,0,.2)}
+.mz-opt .pics{flex:0 0 auto;display:flex;gap:2px}
+.mz-opt .pics img{height:84px;width:auto;max-width:86px;object-fit:contain}
+.mz-opt .tx{font-size:24px;font-weight:800;line-height:1.3}
+.mz-opt.no{opacity:.4;pointer-events:none;border-color:#f3b0a6}
+.mz-opt.no .tx{text-decoration:line-through}
+.mz-opt.yes{border-color:var(--leaf);box-shadow:0 0 0 6px rgba(31,154,87,.4)}
+.mz-opts.off{display:none}
+.mz-opts.reveal .mz-opt{animation:pop .45s cubic-bezier(.2,1.6,.4,1) both}
+.mz-opts.reveal .mz-opt:nth-child(2){animation-delay:.12s}
+.mz-opts.reveal .mz-opt:nth-child(3){animation-delay:.24s}
+.mz-think{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:12px;padding:26px 18px 24px;border:4px dashed #e2c98f;border-radius:24px;background:#fffaf0;text-align:center}
+.mz-think .ic{width:92px;height:92px;border-radius:50%;background:var(--c);display:grid;place-items:center;box-shadow:0 6px 0 rgba(0,0,0,.16);animation:breathe 1.8s ease-in-out infinite}
+.mz-think .ic svg{width:54px;height:54px}
+.mz-think p{margin:0 0 8px;font-size:30px;font-weight:800;line-height:1.35;text-wrap:balance}
+.mz-think .who{font-size:19px;font-weight:800;color:#9a8058;margin-bottom:-4px}
+.mz-show{display:inline-flex;align-items:center;gap:10px;font-family:var(--f-display);font-size:31px;line-height:1.2;background:var(--royal);color:var(--white);border:none;border-radius:999px;padding:12px 32px 6px;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.mz-show:active{translate:0 3px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.mz-show svg{width:32px;height:32px;margin-top:-6px}
+
+/* station 9: the secret mission */
+.ms{position:absolute;top:168px;width:290px;height:432px;translate:-50% 0;border:none;padding:0;background:none;font:inherit;color:var(--ink);cursor:pointer;z-index:20}
+.ms .env{position:absolute;inset:0;display:grid;place-items:center;border-radius:28px;background:rgba(26,17,64,.55);border:4px dashed rgba(243,182,49,.75);transition:opacity .35s,scale .35s}
+.ms .env img{width:236px;filter:drop-shadow(0 12px 12px rgba(0,0,0,.4))}
+.ms .env .n{position:absolute;top:16px;right:16px;width:60px;height:60px;border-radius:50%;background:var(--ember);color:var(--white);font-family:var(--f-display);font-size:36px;display:grid;place-items:center;padding-top:6px;border:4px solid var(--white)}
+.ms.locked{pointer-events:none}
+.ms.locked .env{opacity:.5}
+.ms.next .env{border-color:#ffe27a;box-shadow:0 0 0 8px rgba(255,226,122,.35)}
+.ms.next .env img{animation:float2 2s ease-in-out infinite}
+@keyframes float2{50%{translate:0 -14px}}
+.ms .open{box-sizing:border-box;position:absolute;inset:0;background:var(--parch);border:5px solid var(--parch-edge);border-radius:28px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;opacity:0;scale:.6;transition:opacity .35s .12s,scale .45s .12s cubic-bezier(.2,1.5,.4,1);box-shadow:0 14px 30px var(--shadow)}
+.ms.opened{cursor:default}
+.ms.opened .env{opacity:0;scale:1.3;pointer-events:none}
+.ms.opened .open{opacity:1;scale:1}
+.ms .ic{width:100px;height:100px;border-radius:50%;background:var(--c);display:grid;place-items:center;box-shadow:0 6px 0 rgba(0,0,0,.18);flex:0 0 auto}
+.ms .ic svg{width:58px;height:58px}
+.ms .mt{font-family:var(--f-display);font-size:24px;color:var(--royal);line-height:1.2}
+.ms h4{margin:0;font-family:var(--f-display);font-weight:400;font-size:38px;line-height:1.1;color:var(--c)}
+.ms p{margin:0;font-size:22px;font-weight:700;line-height:1.45;text-wrap:pretty}
+.dcard{box-sizing:border-box;position:absolute;left:50%;top:104px;translate:-50% 0;width:1060px;padding:26px 36px 30px;background:#fffaf0;color:var(--ink);border:5px solid var(--parch-edge);border-radius:30px;z-index:43;box-shadow:0 18px 40px var(--shadow);display:grid;grid-template-columns:1fr 300px;gap:10px 30px}
+.dcard .hd{grid-column:1 / -1;display:flex;align-items:center;gap:16px;border-bottom:3px dashed var(--parch-edge);padding-bottom:12px}
+.dcard .hd .mg{width:76px;height:76px;border-radius:50%;background:var(--royal);display:grid;place-items:center;flex:0 0 auto}
+.dcard .hd .mg svg{width:44px;height:44px}
+.dcard h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:46px;line-height:1.1;color:var(--royal)}
+.dcard .hd p{margin:2px 0 0;font-size:26px;font-weight:700;color:#7a5c3a}
+.dcard .stamp{margin-inline-start:auto;font-family:var(--f-display);font-size:30px;color:var(--ember);border:4px solid var(--ember);border-radius:12px;padding:4px 16px 0;rotate:-8deg;opacity:.85}
+.dcard .fl{display:flex;flex-direction:column;gap:12px}
+.dcard .f b{display:block;font-size:27px;font-weight:800;line-height:1.3}
+.dcard .f .ln{display:flex;align-items:flex-end;gap:10px;height:42px;border-bottom:3px dotted #b9a27a;font-size:24px;font-weight:800;color:#b9a27a}
+.dcard .ev{border:4px dashed #c9b083;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:#9a8058;font-size:23px;font-weight:800;padding:14px;background:repeating-linear-gradient(45deg,#fffaf0 0 14px,#fbf1dc 14px 28px)}
+.dcard .ev svg{width:64px;height:64px}
+@media (prefers-reduced-motion:reduce){.mz-tok.walk,.mz-star,.mz-gate.active .mz-door .badge,.ms.next .env img{animation:none}}
+@media (prefers-reduced-motion:reduce){#bg.kb,.prop.float,.cta,.actor.sleepy,.actor.walk,.med.next .ring,.item.lost img,.item .qm,.item.placed.swim img,.item.placed.happy img{animation:none}}
+</style>
+
+<div id="viewport">
+  <div id="stage">
+    <div id="bg"></div>
+    <div id="alarm"></div>
+    <div id="scene"></div>
+    <canvas id="fx" width="1600" height="900"></canvas>
+    <div id="hud"></div>
+    <div id="tbar">
+      <button class="tb" id="b-home" aria-label="الكتاب السحري" title="الكتاب السحري"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5C5.5 4 9 4 12 6c3-2 6.5-2 9-.5V19c-2.5-1.5-6-1.5-9 .5-3-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg></button>
+      <button class="tb" id="b-back" aria-label="السابق" title="السابق"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 6v12l8.5-6zM2 6v12l8.5-6z"/></svg></button>
+      <button class="tb" id="b-skip" aria-label="تخطّي إلى التالي" title="تخطّي إلى التالي"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 6v12l-8.5-6zM22 6v12l-8.5-6z"/></svg></button>
+      <button class="tb" id="b-again" aria-label="إعادة الجملة" title="إعادة الجملة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></svg></button>
+      <button class="tb" id="b-mute" aria-label="الصوت" title="الصوت"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button>
+      <button class="tb" id="b-full" aria-label="ملء الشاشة" title="ملء الشاشة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+    <div id="caption"><div class="av"></div><div><div class="who"></div><div class="txt"></div></div></div>
+    <div id="flash"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const LINES = {"box_q": ["narrator", "ما أَسْماءُ هذِهِ الأَطْعِمَةِ وَالمَشْروبات؟ هَلْ جَميعُها مُناسِبَةٌ إذا تَناوَلْناها بِكَثْرَة؟ اليَوْمَ سَنَذْهَبُ في مُغامَرَةٍ لِنَتَعَلَّمَ كَيْفَ نَخْتارُ غِذاءَنا الصِّحِّيّ!"], "op_1": ["boy", "يا لَلْعَجَب! ما هذا الكِتابُ الجَميل؟"], "op_3": ["boy", "يا أَبْطالَ الصَّفِّ الأَوَّل، هَلْ أَنْتُمْ مُسْتَعِدّون؟"], "s1_a": ["saeed", "يا إلَهي! لَقَدْ أَكْثَرَ سَلّومُ مِنَ الحَلْوَيات، وَلَمْ يَعُدْ يُريدُ اللَّعِبَ مَعَنا!"], "s1_b": ["salloum", "أُريدُ أَنْ أَسْتَعيدَ نَشاطي! ماذا آكُل؟"], "s1_c": ["saeed", "يا أَبْطالَ الصَّفِّ الأَوَّل، ساعِدونا في اخْتِيارِ الفَواكِهِ وَالخَضْراوات!"], "s1_g": ["saeed", "اسْحَبوا الفَواكِهَ وَالخَضْراواتِ إلى السَّلَّة."], "s1_x": ["saeed", "هذا نَأْكُلُ مِنْهُ قَليلاً. اخْتاروا فاكِهَةً أَوْ خَضْراوات!"], "s1_w": ["salloum", "شُكْراً يا أَصْدِقائي! سَأَحْرِصُ عَلى تَناوُلِ الفَواكِهِ وَالخَضْراوات!"], "s1_n": ["boy", "أَنْقَذْنا سَلّوماً! مَنْ يَحْتاجُ إلى مُساعَدَتِنا الآن؟"], "s2_a": ["nakhla", "لَقَدْ بَذَلْتُ مَجْهوداً كَبيراً اليَوْم، وَأَشْعُرُ بِالعَطَشِ وَالتَّعَب! أَحْتاجُ إلى شَرابٍ صِحِّيٍّ وَلَذيذ!"], "s2_b": ["nakhla", "يا أَبْطالَ الصَّفِّ الأَوَّل، هَلْ تُساعِدونَني في صُنْعِ شَرابٍ صِحِّيّ؟ اخْتاروا المُكَوِّناتِ المُناسِبَة!"], "s2_g": ["nakhla", "اختاروا ثَلاثَةَ مُكَوِّناتٍ وَاسْحَبوها إلى الخَلّاط."], "s2_x": ["nakhla", "هذا فيهِ سُكَّرٌ كَثير! اخْتاروا مُكَوِّناً آخَر."], "s2_w": ["nakhla", "رائِعٌ يا أَبْطال! صَنَعْتُمْ شَراباً صِحِّيّاً وَلَذيذاً! شُكْراً لِمُساعَدَتِكُم!"], "s2_t": ["narrator", "وَتَذَكَّروا: الماءُ هُوَ الخِيارُ الأَوَّلُ لِإرْواءِ العَطَش."], "s2_n": ["boy", "اسْمَعوا! إنْذارٌ مِنَ الصَّفْحَةِ الثّالِثَة!"], "s3_a": ["reem", "هُناكَ مُشْكِلَة! حَقيبَةُ طَعامِ أَحَدِ التَّلاميذِ لا تَحْتَوي عَلى اخْتِياراتٍ مُتَنَوِّعَةٍ وَمُناسِبَة!"], "s3_b": ["reem", "أَحْتاجُ إلى مُحَقِّقينَ أَذْكِياء! مَنْ يَسْتَطيعُ اكْتِشافَ الخَطَأِ وَمُساعَدَتي؟"], "s3_g1": ["reem", "المِسوا الأَطْعِمَةَ غَيْرَ المُناسِبَةِ لِنُخْرِجَها مِنَ الحَقيبَة."], "s3_g2": ["reem", "أَحْسَنْتُم! وَالآنَ اسْحَبوا أَطْعِمَةً مُفيدَةً إلى الحَقيبَة."], "s3_x": ["reem", "هذا اخْتِيارٌ جَيِّد! أَبْقوهُ في الحَقيبَة."], "s3_w": ["reem", "عَمَلٌ رائِعٌ أَيُّها المُحَقِّقون! لَقَدْ حَلَلْتُمُ اللُّغْز!"], "s3_n": ["narrator", "تُفْتَحُ الصَّفْحَةُ الرّابِعَةُ عَلى غابَةٍ خَضْراء."], "s4_a": ["redhood", "يا إلَهي! لَقَدِ اخْتَلَطَتِ الأَطْعِمَة، وَلَمْ أَعُدْ أَعْرِفُ ماذا أَضَعُ في سَلَّةِ جَدَّتي!"], "s4_b": ["redhood", "أُريدُ أَنْ أُجَهِّزَ لِجَدَّتي سَلَّةَ غِذاءٍ مُتَنَوِّعَة. هَلْ تُساعِدونَني؟"], "s4_g": ["redhood", "لِكُلِّ مَجْموعَةٍ سَلَّة! ضَعوا فيها أَرْبَعَةَ أَنْواعٍ مُخْتَلِفَةٍ مِنَ الطَّعام. أَيُّ مَجْموعَةٍ تُنْهي أَوَّلاً؟"], "s4_x": ["redhood", "هذا النَّوْعُ مَوْجودٌ في السَّلَّة! اخْتاروا نَوْعاً مُخْتَلِفاً."], "s4_w": ["redhood", "شُكْراً لَكُم! أَصْبَحَتْ سَلَّةُ جَدَّتي مَليئَةً بِالأَطْعِمَةِ المُتَنَوِّعَة!"], "s4_n": ["narrator", "تَظْهَرُ الصَّفْحَةُ الخامِسَة، وَيُسْمَعُ خَريرُ الماءِ في الفَلَج."], "s5_a": ["maha", "الماءُ مُهِمٌّ لِأَجْسامِنا! وَلكِنِ اخْتَفَتْ بَلّورَتي السِّحْرِيَّة!"], "s5_b": ["maha", "هَلْ تَعْرِفونَ أَفْضَلَ مَشْروبٍ عِنْدَما نَشْعُرُ بِالعَطَش؟"], "s5_g": ["maha", "المِسوا الزُّجاجَةَ الَّتي اخْتَبَأَتْ فيها البَلّورَة."], "s5_x": ["maha", "لَيْسَتْ هُنا! هذا المَشْروبُ فيهِ سُكَّرٌ كَثير."], "s5_w": ["maha", "أَحْسَنْتُم! الماءُ مُهِمٌّ لِأَجْسامِنا، وَقَدْ أَعَدْتُمْ بَلّورَتي!"], "s6_a": ["fahd", "لَنْ أَسْتَطيعَ إكْمالَ السِّباقِ حَتّى نُكَوِّنَ وَجْبَةً غِذائِيَّةً مُتَنَوِّعَة!"], "s6_b": ["fahd", "هَيّا نُكَوِّنُ وَجْبَةً مُتَوازِنَة!"], "s6_g": ["fahd", "ضَعوا في الطَّبَقِ أَرُزّاً وَسَمَكاً وَخَضْراوات، وَاخْتاروا مَشْروباً مُناسِباً."], "s6_x": ["fahd", "هذا نَأْكُلُ مِنْهُ قَليلاً! اخْتاروا طَعاماً آخَر."], "s6_w": ["fahd", "مُذْهِلٌ يا أَبْطال! لَقَدْ صَنَعْتُمْ وَجْبَةً مُتَنَوِّعَةً وَأَكْمَلْتُمُ المُهِمَّة!"], "s6_n": ["boy", "هذِهِ قَلْعَةُ نِزْوى في وَطَني عُمان!"], "s7_a": ["boy", "جَدّي، ما أَجْمَلَ قَلْعَةَ نِزْوى! ماذا سَنَكْتَشِفُ اليَوْم؟"], "s7_b": ["grandpa", "سَأُريكَ يا حَفيدي كَنْزاً مِنْ أَطْعِمَةِ عُمان، وَلكِنْ لَدَيْنا مُشْكِلَةٌ صَغيرَة!"], "s7_c": ["grandpa", "اخْتَلَطَتِ الأَطْعِمَةُ يا حَفيدي! بَعْضُها نَخْتارُهُ كَثيراً، وَبَعْضُها نَأْكُلُ مِنْهُ قَليلاً!"], "s7_d": ["boy", "يا أَبْطالَ الصَّفِّ الأَوَّل! هَلْ تُساعِدونَني وَجَدّي في تَصْنيفِ أَطْعِمَتِنا العُمانِيَّة؟"], "s7_g": ["grandpa", "ضَعوا كُلَّ طَعامٍ في السَّلَّةِ المُناسِبَة."], "s7_x": ["grandpa", "فَكِّروا مَرَّةً أُخْرى يا أَبْطال."], "s7_e": ["boy", "القُرْصُ بِالعَسَلِ وَالحَلْوى مِنْ تُراثِنا الجَميل، لكِنَّنا نَأْكُلُ مِنْهُما قَليلاً."], "s7_w": ["grandpa", "أَحْسَنْتُم! لَقَدْ تَعَرَّفْتُمْ عَلى أَغْذِيَتِنا العُمانِيَّةِ وَأَحْسَنْتُمُ الاخْتِيار!"], "s7_w2": ["boy", "حَصَلْنا عَلى النَّجْمَةِ السّابِعَة!"], "f_q1": ["narrator", "التَّحَدّي الأَوَّل: ما أَفْضَلُ مَشْروبٍ لِإرْواءِ العَطَش؟"], "f_q2": ["narrator", "التَّحَدّي الثّاني: أَيُّ مَجْموعَةٍ تَصْلُحُ لِوَجْبَةٍ مُتَنَوِّعَة؟"], "f_q3": ["narrator", "التَّحَدّي الثّالِث: سالِمٌ يَتَناوَلُ الحَلْوى العُمانِيَّةَ بِكَثْرَةٍ كُلَّ يَوْم. بِماذا تَنْصَحونَه؟ وَلِماذا؟"], "f_x": ["narrator", "فَكِّروا مَرَّةً أُخْرى."], "e_saeed": ["saeed", "تَناوَلوا الفَواكِهَ وَالخَضْراوات!"], "e_nakhla": ["nakhla", "اخْتاروا مُكَوِّناتٍ صِحِّيَّةً لِمَشْروباتِكُم!"], "e_reem": ["reem", "قَلِّلوا مِنَ الحَلْوَياتِ وَالمَشْروباتِ الغازِيَّة!"], "e_redhood": ["redhood", "نَوِّعوا غِذاءَكُم!"], "e_maha": ["maha", "اشْرَبوا الماءَ بِانْتِظام!"], "e_fahd": ["fahd", "اجْعَلوا وَجَباتِكُمْ مُتَنَوِّعَةً وَمُتَوازِنَة!"], "e_grandpa": ["grandpa", "وَاعْتَزّوا بِأَغْذِيَةِ عُمانَ وَتُراثِها الجَميل!"], "e_boy": ["boy", "شُكْراً لَكُمْ يا أَبْطال! الغِذاءُ الصِّحِّيُّ سِرُّ صِحَّتِنا وَنَشاطِنا!"], "e_msg": ["narrator", "صِحَّتي كَنْزي، وَغِذائي سِرُّ نَشاطي. مِنْ خَيْراتِ عُمانَ نَخْتارُ غِذاءَنا، وَبِالغِذاءِ المُتَوازِنِ نُحافِظُ عَلى صِحَّتِنا."], "p_1": ["boy", "أَحْسَنْت!"], "p_2": ["boy", "رائِع!"], "p_3": ["boy", "مُمْتاز!"], "star": ["narrator", "حَصَلْتُمْ عَلى نَجْمَةٍ ذَهَبِيَّة!"], "d_banana": ["nakhla", "صَنَعْتُمْ حَليبَ المَوْز!"], "d_dates": ["nakhla", "صَنَعْتُمْ حَليبَ التَّمْر!"], "d_strawberry": ["nakhla", "صَنَعْتُمْ حَليبَ الفَراوِلَة!"], "d_mixshake": ["nakhla", "صَنَعْتُمْ حَليبَ الفَواكِه!"], "d_orange": ["nakhla", "صَنَعْتُمْ عَصيرَ البُرْتُقال!"], "d_juice": ["nakhla", "صَنَعْتُمْ عَصيرَ الفَواكِه!"], "d_bad": ["nakhla", "أوه! هذا الشَّرابُ فيهِ سُكَّرٌ كَثير، وَلَنْ يَمْنَحَني القُوَّة! لِنُفْرِغِ الخَلّاطَ وَنَخْتَرْ مُكَوِّناتٍ صِحِّيَّة."], "s3_g": ["reem", "لِكُلِّ مَجْموعَةٍ حَقيبَة! المِسوا الأَطْعِمَةَ غَيْرَ المُناسِبَةِ لِتُخْرِجوها، ثُمَّ اسْحَبوا أَطْعِمَةً مُفيدَةً إلى حَقيبَتِكُم. أَيُّ مَجْموعَةٍ تُنْهي أَوَّلاً؟"], "g_win1": ["narrator", "فازَتِ المَجْموعَةُ الأولى!"], "g_win2": ["narrator", "فازَتِ المَجْموعَةُ الثّانِيَة!"], "g_win3": ["narrator", "فازَتِ المَجْموعَةُ الثّالِثَة!"], "an_i": ["narrator", "يا أَبْطالَ الصَّفِّ الأَوَّل! ضاعَتْ هذِهِ الحَيَواناتُ عَنْ بُيوتِها. اسْحَبوا كُلَّ حَيَوانٍ إلى بيئَتِهِ المُناسِبَة."], "an_camel": ["narrator", "أَحْسَنْتُم! الجَمَلُ يَعيشُ في الصَّحْراء."], "an_fish": ["narrator", "أَحْسَنْتُم! السَّمَكَةُ تَعيشُ في البَحْر."], "an_monkey": ["narrator", "أَحْسَنْتُم! القِرْدُ يَعيشُ في الغابَة."], "an_x": ["narrator", "انْتَبِهوا! هذِهِ البيئَةُ لا تُناسِبُه. فَكِّروا مَرَّةً أُخْرى."], "an_w": ["narrator", "رائِع! عادَتْ كُلُّ الحَيَواناتِ إلى بيئاتِها المُناسِبَة."], "op_2": ["narrator", "أَمامَكُمْ تِسْعُ مُغامَرات. في كُلِّ مُغامَرَةٍ مُهِمَّةٌ تَنْتَظِرُكُم، وَبَعْدَ كُلِّ مُهِمَّةٍ ناجِحَةٍ سَتَحْصُلونَ عَلى نَجْمَةٍ ذَهَبِيَّة. عِنْدَما تَجْمَعونَ النُّجومَ التِّسْع، يُفْتَحُ كَنْزُ الصِّحَّة!"], "f_1": ["narrator", "اجْتَمَعَتِ النُّجومُ التِّسْعُ فَوْقَ صُنْدوقِ الكَنْز، لكِنَّهُ لا يُفْتَح! أَمامَكُمْ ثَلاثَةُ تَحَدِّياتٍ أَخيرَة؛ إذا نَجَحْتُمُ اكْتَشَفْتُمْ كَنْزَ الصِّحَّةِ الحَقيقِيّ!"], "f_key": ["narrator", "اتَّحَدَتِ النُّجومُ التِّسْعُ وَصارَتْ مِفْتاحاً ذَهَبِيّاً! المِسوا المِفْتاحَ لِنَفْتَحَ الكَنْز."], "s8_a": ["boy", "انْظُروا! هذِهِ مُتاهَةُ الأَبْطال، وَفي نِهايَتِها النَّجْمَةُ الثّامِنَة!"], "s8_b": ["boy", "في المُتاهَةِ أَرْبَعُ بَوّابات. في كُلِّ بَوّابَةٍ سُؤالٌ وَثَلاثَةُ أَبْواب، وَبابٌ واحِدٌ فَقَطْ يَفْتَحُ الطَّريق!"], "s8_q1": ["narrator", "المُسْتَوى الأَوَّل: أَيُّ هذِهِ الأَطْعِمَةِ صِحِّيٌّ نَخْتارُهُ كَثيراً؟ الحَلْوى، أَمِ الفَواكِه، أَمْ رَقائِقُ البَطاطا؟"], "s8_x": ["narrator", "طَريقٌ مَسْدود! فَكِّروا مَرَّةً أُخْرى وَاخْتاروا باباً آخَر."], "s8_w": ["boy", "أَحْسَنْتُم يا أَبْطال! عَبَرْنا المُتاهَةَ وَوَصَلْنا إلى النَّجْمَة!"], "s8_n": ["narrator", "وَصَلَتْ رِسالَةٌ سِرِّيَّةٌ مِنَ المُحَقِّقِ مازِن!"], "s9_a": ["detective", "مَرْحَباً أَيُّها المُحَقِّقُ الذَّكِيّ! أَمامَكَ مُهِمَّةٌ سِرِّيَّةٌ في مَنْزِلِك."], "s9_b": ["detective", "ابْحَثْ عَنْ أَسْرارِ الغِذاء، وَاكْتَشِفْ بِنَفْسِكَ كَيْفَ تَخْتارُ طَعامَكَ لِتُحافِظَ عَلى صِحَّتِك!"], "s9_g": ["detective", "المِسوا الرَّسائِلَ السِّرِّيَّةَ الأَرْبَعَ لِتَفْتَحوها، واحِدَةً بَعْدَ الأُخْرى."], "s9_m1": ["detective", "المُهِمَّةُ الأولى: ابْحَثْ وَاكْتَشِف. ابْحَثْ في مَطْبَخِ مَنْزِلِكَ بِمُساعَدَةِ أَحَدِ أَفْرادِ أُسْرَتِك، عَنْ ثَلاثَةِ أَطْعِمَةٍ تَعْتَقِدُ أَنَّها صِحِّيَّة، وَطَعامٍ واحِدٍ يَنْبَغي التَّقْليلُ مِنْه."], "s9_m2": ["detective", "المُهِمَّةُ الثّانِيَة: فَكِّرْ وَاسْتَنْتِج. اسْأَلْ نَفْسَك: لِماذا اخْتَرْتُ هذِهِ الأَطْعِمَة؟ وَما الَّذي يَجْعَلُ بَعْضَها أَفْضَلَ لِصِحَّةِ جِسْمي؟"], "s9_m3": ["detective", "المُهِمَّةُ الثّالِثَة: الْتَقِطِ الدَّليل. ارْسُمِ الأَطْعِمَةَ الَّتي اكْتَشَفْتَها، أَوِ الْتَقِطْ لَها صورَةً بِمُساعَدَةِ أُسْرَتِك."], "s9_m4": ["detective", "المُهِمَّةُ الرّابِعَة: قَرارُ المُحَقِّق. اخْتَرْ غِذاءً صِحِّيّاً تُريدُ إضافَتَهُ إلى وَجْبَتِكَ المَدْرَسِيَّةِ غَداً."], "s9_c": ["detective", "سَجِّلوا اكْتِشافاتِكُمْ في بِطاقَةِ المُحَقِّقِ الصَّغير، وَأَحْضِروها مَعَكُمْ إلى المَدْرَسَة!"], "s9_w": ["detective", "أَنا واثِقَةٌ أَنَّكُمْ أَذْكى المُحَقِّقين! أَنْتَظِرُ اكْتِشافاتِكُم."], "s5_n": ["narrator", "تُفْتَحُ الصَّفْحَةُ السّادِسَةُ عَلى مِرْآةٍ سِحْرِيَّة!"], "s6m_a": ["narrator", "هَيّا إلى مِرْآةِ الغِذاءِ الصِّحِّيّ! سَنَرى صَفَّنا عَلى السَّبّورَة، وَتَطيرُ بَيْنَنا الأَطْعِمَة. هَيّا نَتَعَرَّفُ عَلَيْها مَعاً!"], "s6m_w": ["narrator", "أَحْسَنْتُم! تَعَرَّفْتُمْ عَلى الأَطْعِمَةِ في مِرْآةِ الغِذاءِ الصِّحِّيّ."], "s8_q2": ["narrator", "المُسْتَوى الثّاني: جاعَ فَهْدٌ بَعْدَ التَّمْرين. ماذا يَأْكُلُ وَجْبَةً خَفيفَةً صِحِّيَّة؟ فَكِّروا، وَأَخْبِرونا بِإجابَتِكُم!"], "s8_o2": ["narrator", "بُرْغَرٌ وَبَطاطا مَقْلِيَّة؟ أَمْ حَلْوى وَمَشْروبٌ غازِيّ؟ أَمْ تَمْرٌ وَلَبَن؟"], "s8_q3": ["narrator", "المُسْتَوى الثّالِث: لِماذا نَأْكُلُ الحَلْوى قَليلاً؟ فَكِّروا، وَأَخْبِرونا بِإجابَتِكُم!"], "s8_o3": ["narrator", "هَلْ لِأَنَّ فيها سُكَّراً كَثيراً يَضُرُّ أَسْنانَنا وَأَجْسامَنا؟ أَمْ لِأَنَّ لَوْنَها جَميل؟ أَمْ لِأَنَّها تَجْعَلُنا أَقْوى؟"], "s8_q4": ["narrator", "المُسْتَوى الرّابِع: صَديقُكُمْ لا يُحِبُّ الخَضْراوات. ما أَفْضَلُ فِكْرَةٍ لِمُساعَدَتِه؟ فَكِّروا، وَأَخْبِرونا بِإجابَتِكُم!"], "s8_o4": ["narrator", "أَنْ يَأْكُلَ الحَلْوى بَدَلاً مِنْها؟ أَمْ نُعِدُّ لَهُ طَبَقاً مُلَوَّناً مِنْ خَضْراواتٍ يُحِبُّها؟ أَمْ يَتْرُكُ وَجْبَتَهُ وَلا يَأْكُل؟"]};
+const MEDIA = {"op": {"src": "video/op.mp4", "cues": [[2.59, "op_1"], [10.27, "op_2"], [23.55, "op_3"]]}, "s1": {"src": "video/s1.mp4", "cues": [[1.46, "s1_a"], [8.67, "s1_b"], [12.16, "s1_c"]]}, "s2": {"src": "video/s2.mp4", "cues": [[10.61, "s2_a"], [21.13, "s2_b"]]}, "s3": {"src": "video/s3.mp4", "cues": [[2.12, "s3_a"], [11.79, "s3_b"]]}, "s4": {"src": "video/s4.mp4", "cues": [[2.34, "s4_a"], [12.65, "s4_b"]]}, "s5": {"src": "video/s5.mp4", "cues": [[0, "s5_a"], [14.33, "s5_b"]]}, "s7": {"src": "video/s7.mp4", "cues": [[1.07, "s7_a"], [10.68, "s7_b"], [20.46, "s7_c"], [31.36, "s7_d"]]}, "s8": {"src": "video/s8.mp4", "cues": [[2.55, "s8_a"], [11.17, "s8_b"]]}, "s9": {"src": "video/s9.mp4", "cues": [[1.31, "s9_a"], [14.3, "s9_b"]]}};
+
+/* ---------- characters ---------- */
+const CH = {
+  boy:{n:'الطفل العُماني'}, grandpa:{n:'الجدّ'}, saeed:{n:'العمّ سعيد'}, salloum:{n:'سلّوم'},
+  nakhla:{n:'سوبر عمان'}, reem:{n:'المحقّقة ريم'}, redhood:{n:'ذات الرداء الأحمر'},
+  maha:{n:'مها حارسة الفلج'}, fahd:{n:'العدّاء فهد'}, detective:{n:'المحقّق مازن'}, narrator:{n:'الراوي'}
+};
+const IMG = {c:n=>`img/chars/${n}.webp`, i:n=>`img/items/${n}.webp`, b:n=>`img/bg/${n}.webp`};
+
+/* ---------- stage scaling ---------- */
+const viewport = document.getElementById('viewport');
+const stage = document.getElementById('stage');
+let SCALE = 1, OX = 0, OY = 0;
+function fit(){
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  SCALE = Math.min(w/1600, h/900);
+  OX = (w - 1600*SCALE)/2; OY = (h - 900*SCALE)/2;
+  stage.style.transform = `translate(${OX}px,${OY}px) scale(${SCALE})`;
+}
+addEventListener('resize', fit); fit();
+function toStage(cx, cy){ const r = stage.getBoundingClientRect(); return {x:(cx-r.left)/SCALE, y:(cy-r.top)/SCALE}; }
+function rectOf(el, pad=0){ const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect();
+  return {x:(r.left-s.left)/SCALE - pad, y:(r.top-s.top)/SCALE - pad, w:r.width/SCALE + 2*pad, h:r.height/SCALE + 2*pad}; }
+const inR = (p,r) => p.x>=r.x && p.x<=r.x+r.w && p.y>=r.y && p.y<=r.y+r.h;
+
+/* ---------- run control ---------- */
+let RUN = 0; const CANCEL = {cancel:true};
+let timers = [];
+function newRun(){ RUN++; GAME_MODE = false; stopAudio(); timers.forEach(clearTimeout); timers = []; return RUN; }
+const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+function ctx(id){
+  const g = v => { if (id !== RUN) throw CANCEL; return v; };
+  return {
+    id, g,
+    sleep: async ms => g(await new Promise(r => later(r, ms))),
+    say: async (lid, opt) => g(await say(lid, opt)),
+    sayAll: async (...ids) => { for (const l of ids) g(await say(l)); },
+    cta: async (label) => g(await cta(label)),
+    wait: async p => g(await p),
+  };
+}
+/* history for the teacher's "previous" button */
+const HIST = [];
+function mark(id, go){ const last = HIST[HIST.length - 1]; if (!last || last.id !== id) HIST.push({id, go}); }
+function goBack(){ if (HIST.length < 2) return; HIST.pop(); const prev = HIST.pop(); prev.go(); }
+async function scene(fn){
+  const id = newRun();
+  clearScene();
+  try { await fn(ctx(id)); } catch(e){ if (e !== CANCEL) console.error(e); }
+}
+
+/* ---------- audio ---------- */
+let curAudio = null, curResolve = null, muted = false, lastLine = null, GAME_MODE = false;
+const cache = {};
+function audioFor(id){ if (!cache[id]) { const a = new Audio(`audio/${id}.mp3`); a.preload = 'auto'; cache[id] = a; } return cache[id]; }
+function preload(ids){ ids.forEach(audioFor); }
+function stopAudio(){ if (curAudio){ curAudio.pause(); curAudio.onended = null; curAudio = null; } if (curResolve){ const r = curResolve; curResolve = null; r(); } document.querySelectorAll('.actor.talk').forEach(a => a.classList.remove('talk')); }
+const strip = t => t.replace(/[ً-ْٰ]/g, '');
+const est = t => 900 + strip(t).length * 75;
+function say(id, {caption = true} = {}){
+  const L = LINES[id]; if (!L) return Promise.resolve();
+  stopAudio(); lastLine = id;
+  if (caption) showCaption(L[0], L[1]);
+  const act = ACT[L[0]]; if (act) act.classList.add('talk');
+  return new Promise(res => {
+    let done = false;
+    const fin = () => { if (done) return; done = true; if (act) act.classList.remove('talk'); if (curResolve === fin) curResolve = null;
+      if (GAME_MODE) later(() => { if (lastLine === id && !curResolve) hideCaption(); }, 1600);
+      res(); };
+    curResolve = fin;
+    const a = audioFor(id); curAudio = a;
+    try { a.currentTime = 0; } catch(e){}
+    a.muted = muted;
+    a.onended = fin;
+    a.onerror = () => later(fin, est(L[1]));
+    const p = a.play(); if (p) p.catch(() => later(fin, est(L[1])));
+    later(fin, est(L[1]) + 9000); // safety net
+  });
+}
+function sayNow(id){ say(id); }
+
+/* sound effects synthesized in the browser */
+let AC = null;
+function ac(){ if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+function tone(f, t0, dur, type='sine', vol=.25, f2){ const a = ac(); if (!a || muted) return; const o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, a.currentTime + t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, a.currentTime + t0 + dur);
+  g.gain.setValueAtTime(0, a.currentTime + t0); g.gain.linearRampToValueAtTime(vol, a.currentTime + t0 + .01); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + t0 + dur);
+  o.connect(g).connect(a.destination); o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + dur + .05); }
+function noise(t0, dur, vol=.2, freq=1200){ const a = ac(); if (!a || muted) return; const len = a.sampleRate*dur, b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0);
+  for (let i=0;i<len;i++) d[i] = (Math.random()*2-1) * (1 - i/len);
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = b; f.type = 'bandpass'; f.frequency.value = freq; g.gain.value = vol;
+  s.connect(f).connect(g).connect(a.destination); s.start(a.currentTime + t0); }
+const sfx = {
+  ding(){ tone(880,0,.25,'triangle',.25); tone(1320,.09,.35,'triangle',.22); },
+  buzz(){ tone(220,0,.28,'square',.08,150); tone(180,.12,.3,'square',.07,120); },
+  pop(){ tone(500,0,.12,'sine',.25,900); },
+  whoosh(){ noise(0,.45,.35,900); },
+  sparkle(){ [1568,1976,2349,2637,3136].forEach((f,i)=>tone(f,i*.07,.4,'sine',.12)); },
+  page(){ noise(0,.35,.25,2600); },
+  alarm(){ for (let i=0;i<4;i++){ tone(880,i*.32,.16,'square',.07); tone(660,i*.32+.16,.16,'square',.07); } },
+  blend(){ for (let i=0;i<10;i++) noise(i*.12,.14,.18,500+i*60); },
+  fanfare(){ [523,659,784,1046].forEach((f,i)=>tone(f,i*.13,.5,'triangle',.2)); tone(1046,.55,.9,'triangle',.18); tone(1318,.55,.9,'sine',.12); },
+  thud(){ tone(140,0,.25,'sine',.35,60); }
+};
+function praise(){ if (Math.random() < .45) sayNow(['p_1','p_2','p_3'][Math.floor(Math.random()*3)]); }
+
+/* ---------- scene helpers ---------- */
+const sceneEl = document.getElementById('scene');
+const bgEl = document.getElementById('bg');
+let ACT = {};
+function clearScene(){ sceneEl.innerHTML = ''; ACT = {}; stage.classList.remove('pre', 'lowcta'); hideCaption(); document.getElementById('alarm').classList.remove('on'); bgEl.classList.remove('dim'); const v = document.getElementById('video'); if (v) v.remove(); }
+function setBg(n, {kb = true, dim = false} = {}){ bgEl.style.backgroundImage = `url(${IMG.b(n)})`; bgEl.classList.toggle('kb', kb); bgEl.classList.toggle('dim', dim); }
+function el(tag, cls, html){ const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+function actor(name, {img = name, x = 800, bottom = 60, h = 520, enter = 'fade', cls = ''} = {}){
+  const a = el('img', 'actor ' + cls); a.src = IMG.c(img); a.alt = CH[name] ? CH[name].n : name; a.style.height = h + 'px';
+  a.style.bottom = bottom + 'px';
+  const startX = enter === 'right' ? 1900 : enter === 'left' ? -300 : x;
+  a.style.left = startX + 'px';
+  if (enter === 'top') a.style.bottom = '1000px';
+  if (enter === 'fade') a.style.opacity = 0;
+  sceneEl.appendChild(a); ACT[name] = a;
+  requestAnimationFrame(() => requestAnimationFrame(() => { a.style.left = x + 'px'; a.style.bottom = bottom + 'px'; a.style.opacity = 1; }));
+  return a;
+}
+function moveActor(name, x, bottom){ const a = ACT[name]; if (!a) return; a.style.left = x + 'px'; if (bottom != null) a.style.bottom = bottom + 'px'; }
+function setActorImg(name, img){ const a = ACT[name]; if (a) a.src = IMG.c(img); }
+function sizeActor(name, h){ const a = ACT[name]; if (a){ a.style.transition = 'left .9s, bottom .9s, opacity .5s, height .8s'; a.style.height = h + 'px'; } }
+function prop(n, {x, y, w, cls = '', z} = {}){ const p = el('img', 'prop ' + cls); p.src = IMG.i(n); p.alt = ''; p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.width = w + 'px'; if (z) p.style.zIndex = z; sceneEl.appendChild(p); return p; }
+function movePropTo(p, x, y, w){ p.style.left = x + 'px'; p.style.top = y + 'px'; if (w) p.style.width = w + 'px'; }
+function tag(text, color, x, y){ const t = el('div', 'tag ' + color, text); t.style.left = x + 'px'; t.style.top = y + 'px'; sceneEl.appendChild(t); return t; }
+function checkMark(x, y){ const c = el('div', 'check pop', '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'); c.style.left = x + 'px'; c.style.top = y + 'px'; sceneEl.appendChild(c); return c; }
+function counter(n, x, y){ const c = el('div', 'counter'); for (let i=0;i<n;i++) c.appendChild(el('i')); c.style.left = x + 'px'; c.style.top = y + 'px'; sceneEl.appendChild(c);
+  return { set(k){ [...c.children].forEach((d,i)=>d.classList.toggle('on', i < k)); } }; }
+function medal(x, y, rank){ const m = el('div', 'medal r' + rank + ' pop', '١٢٣'[rank - 1]); m.style.left = x + 'px'; m.style.top = y + 'px'; sceneEl.appendChild(m); return m; }
+function flash(){ const f = document.getElementById('flash'); f.style.opacity = .9; later(() => f.style.opacity = 0, 160); }
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; };
+
+/* caption */
+const capEl = document.getElementById('caption');
+const CAPTIONS = false; // spoken lines are heard only; no written subtitles on screen
+function showCaption(who, text){
+  if (!CAPTIONS) return;
+  const av = capEl.querySelector('.av');
+  if (who === 'narrator'){ av.className = 'av narr'; av.innerHTML = `<svg viewBox="0 0 24 24" width="54" height="54" fill="none" stroke="#ffd76a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5C5.5 4 9 4 12 6c3-2 6.5-2 9-.5V19c-2.5-1.5-6-1.5-9 .5-3-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg>`; }
+  else { av.className = 'av'; av.innerHTML = `<img src="${IMG.c(who === 'salloum' ? 'salloum' : who)}" alt="">`; }
+  capEl.querySelector('.who').textContent = CH[who] ? CH[who].n : '';
+  capEl.querySelector('.txt').textContent = strip(text);
+  capEl.classList.add('show');
+}
+function hideCaption(){ capEl.classList.remove('show'); }
+
+/* call to action button */
+function cta(label){ return new Promise(res => { const b = el('button', 'cta', label); b.type = 'button';
+  b.addEventListener('click', () => { ac(); sfx.pop(); b.remove(); res(); }, {once:true}); sceneEl.appendChild(b); b.focus({preventScroll:true}); }); }
+
+/* teacher question card */
+function card(lbl, q, sub){ const c = el('div', 'card pop'); c.innerHTML = `<span class="lbl">${lbl}</span><h3>${q}</h3>${sub ? `<p>${sub}</p>` : ''}`; sceneEl.appendChild(c); return c; }
+
+/* ---------- drag engine ---------- */
+function makeItem(n, x, y, w, data = {}){
+  const it = el('div', 'item home'); it.innerHTML = `<img src="${IMG.i(n)}" alt="">`;
+  it.style.left = x + 'px'; it.style.top = y + 'px'; it.style.width = w + 'px'; it.style.height = w + 'px';
+  it.dataset.k = n; Object.assign(it, {home:{x, y, w}, data});
+  sceneEl.appendChild(it); return it;
+}
+function draggable(it, {targets, onDrop, clone = false}){
+  it.addEventListener('pointerdown', e => {
+    if (it.classList.contains('placed')) return;
+    e.preventDefault(); ac();
+    let d = it;
+    if (clone){ d = makeItem(it.dataset.k, it.home.x, it.home.y, it.home.w, it.data); d.home = it.home; }
+    d.classList.remove('home'); d.classList.add('dragging');
+    const p0 = toStage(e.clientX, e.clientY);
+    const off = {x: parseFloat(d.style.left) - p0.x, y: parseFloat(d.style.top) - p0.y};
+    try { it.setPointerCapture(e.pointerId); } catch(_){}
+    sfx.pop();
+    const move = ev => { const p = toStage(ev.clientX, ev.clientY); d.style.left = (p.x + off.x) + 'px'; d.style.top = (p.y + off.y) + 'px';
+      targets().forEach(t => t.el.classList.toggle('hot', inR(p, rectOf(t.el, 30)))); };
+    const up = ev => {
+      it.removeEventListener('pointermove', move); it.removeEventListener('pointerup', up); it.removeEventListener('pointercancel', up);
+      d.classList.remove('dragging');
+      const p = toStage(ev.clientX, ev.clientY);
+      const hit = targets().find(t => inR(p, rectOf(t.el, 30)));
+      targets().forEach(t => t.el.classList.remove('hot'));
+      const r = hit ? onDrop(d, hit, p) : false;
+      if (r !== true){
+        if (clone){ d.classList.add('home'); d.style.left = d.home.x + 'px'; d.style.top = d.home.y + 'px'; later(() => d.remove(), 460); }
+        else { d.classList.add('home'); d.style.left = d.home.x + 'px'; d.style.top = d.home.y + 'px'; }
+      }
+    };
+    it.addEventListener('pointermove', move); it.addEventListener('pointerup', up); it.addEventListener('pointercancel', up);
+  });
+}
+function place(d, x, y, w){ d.classList.add('placed'); d.classList.add('home'); d.style.left = x + 'px'; d.style.top = y + 'px'; if (w){ d.style.width = w + 'px'; d.style.height = w + 'px'; } }
+function target(n, x, y, w){ const t = el('div', 'target'); t.innerHTML = `<img src="${IMG.i(n)}" alt="">`; t.style.left = x + 'px'; t.style.top = y + 'px'; t.style.width = w + 'px'; sceneEl.appendChild(t); return t; }
+
+/* ---------- confetti ---------- */
+const fx = document.getElementById('fx'), fxc = fx.getContext('2d');
+let parts = [], fxOn = false;
+function confetti(n = 160){ const cols = ['#f3b631','#1f9a57','#e0572b','#ffffff','#7c4ddb','#3cb4e6'];
+  for (let i=0;i<n;i++) parts.push({x:800 + (Math.random()-.5)*600, y:380 + (Math.random()-.5)*120, vx:(Math.random()-.5)*18, vy:-Math.random()*18-6, r:Math.random()*Math.PI, vr:(Math.random()-.5)*.3, s:8+Math.random()*10, c:cols[i%cols.length], life:160+Math.random()*80});
+  if (!fxOn){ fxOn = true; requestAnimationFrame(tick); } }
+function tick(){ fxc.clearRect(0,0,1600,900); parts = parts.filter(p => p.life-- > 0 && p.y < 950);
+  for (const p of parts){ p.vy += .45; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; fxc.save(); fxc.translate(p.x,p.y); fxc.rotate(p.r); fxc.fillStyle = p.c; fxc.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); fxc.restore(); }
+  if (parts.length) requestAnimationFrame(tick); else { fxOn = false; fxc.clearRect(0,0,1600,900); } }
+
+/* ---------- stars HUD ---------- */
+const FLAG = `<svg class="flag" viewBox="0 0 30 20"><rect width="30" height="20" fill="#db161b"/><rect x="9" width="21" height="6.6" fill="#fff"/><rect x="9" y="13.4" width="21" height="6.6" fill="#008000"/></svg>`;
+const STARS = new Set();
+const hud = document.getElementById('hud');
+const N_STARS = 9;
+function drawHud(){ hud.innerHTML = ''; for (let i=1;i<=N_STARS;i++){ const s = el('div', 'slot' + (STARS.has(i) ? ' on' : ''), `<img src="${IMG.i('star')}" alt="">${i===7 ? FLAG : ''}`); s.setAttribute('aria-label', 'نجمة ' + i); hud.appendChild(s); } }
+drawHud();
+async function awardStar(c, i){
+  const s = prop('star', {x:800, y:420, w:10, cls:'glowing', z:48});
+  sfx.sparkle(); confetti(120);
+  let fl = null;
+  if (i === 7){ const f = el('div'); f.innerHTML = FLAG; fl = f.firstChild; fl.style.cssText = 'position:absolute;left:800px;top:500px;width:96px;height:64px;translate:-50% -50%;z-index:49;opacity:1;border-radius:6px;box-shadow:0 0 0 4px #fff'; sceneEl.appendChild(fl); }
+  await c.sleep(30); s.style.width = '300px';
+  await c.say('star');
+  await c.sleep(300);
+  const slot = hud.children[i-1]; const r = rectOf(slot);
+  movePropTo(s, r.x + r.w/2, r.y + r.h/2, 52); if (fl) fl.remove();
+  await c.sleep(820); s.remove(); STARS.add(i); drawHud(); sfx.ding();
+}
+
+/* ---------- video teaser (when a Google Vids clip is available) ---------- */
+function playVideo(c, key){
+  const m = MEDIA[key]; if (!m) return null;
+  return new Promise(res => {
+    const v = el('video'); v.id = 'video'; v.src = m.src; v.playsInline = true; v.muted = muted; v.preload = 'auto';
+    stage.insertBefore(v, document.getElementById('alarm'));
+    const cues = (m.cues || []).slice();
+    const onT = () => { while (cues.length && v.currentTime >= cues[0][0]){ const [, lid] = cues.shift(); const L = LINES[lid]; if (L) showCaption(L[0], L[1]); } };
+    v.addEventListener('timeupdate', onT);
+    const end = () => { v.removeEventListener('timeupdate', onT); hideCaption(); res(true); };
+    v.addEventListener('ended', () => { if (m.hold !== false){ end(); } else { v.remove(); end(); } }, {once:true});
+    v.addEventListener('error', () => { v.remove(); res(false); }, {once:true});
+    curVideo = v;
+    v.play().catch(() => { v.remove(); res(false); });
+  });
+}
+let curVideo = null;
+function dropVideo(){ const v = document.getElementById('video'); if (v) v.remove(); curVideo = null; }
+
+/* ========================================================================
+   SCENES
+   ======================================================================== */
+const DONE = new Set();
+
+/* --- 0. cover --- */
+function cover(){
+  scene(async c => {
+    mark('cover', cover);
+    setBg('bg_book', {dim:true});
+    const t = el('div', 'title', `<div class="kick">العلوم · الصف الأول</div><h1>مغامرة الأبطال<br>في مملكة الغذاء الصحي</h1><div class="sub">تسع مغامرات · تسع نجوم · كنز الصحة</div>`);
+    sceneEl.appendChild(t);
+    actor('boy', {x:1400, bottom:30, h:470, enter:'fade'});
+    await c.cta('ابدؤوا الحصة');
+    try { navigator.wakeLock && navigator.wakeLock.request('screen').catch(()=>{}); } catch(e){}
+    animals();
+  });
+}
+
+/* --- 0b. prior learning: the lost animals (3 minutes) --- */
+const arNum = s => String(s).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+function plTimer(root, total){
+  const ms = total * 1000; let left = ms, last = performance.now(), run = true, ended = false;
+  const b = root.querySelector('b'), tp = root.querySelector('.tp'), C = 2 * Math.PI * 52;
+  tp.style.strokeDasharray = C;
+  const draw = () => { const s = Math.ceil(left / 1000); b.textContent = arNum(Math.floor(s / 60)) + ':' + arNum(String(s % 60).padStart(2, '0')); tp.style.strokeDashoffset = C * (1 - left / ms); };
+  const step = () => { const now = performance.now(); if (run) left = Math.max(0, left - (now - last)); last = now; draw();
+    if (left <= 0 && !ended){ ended = true; root.classList.add('end'); sfx.ding(); later(() => sfx.ding(), 450); return; }
+    later(step, 250); };
+  root.addEventListener('click', () => { ac(); if (ended) return; run = !run; root.classList.toggle('paused', !run); });
+  step();
+}
+const HABS = [
+  {k:'desert', t:'الصحراء', x:1300},
+  {k:'sea',    t:'البحر',   x:800},
+  {k:'forest', t:'الغابة',  x:300},
+];
+/* each animal starts in the tray under a habitat that is not its own */
+const LOST = [
+  {n:'an_fish',   home:'sea',    line:'an_fish',   x:1300, w:200, spot:[800, 330, 230],  cls:'swim'},
+  {n:'an_monkey', home:'forest', line:'an_monkey', x:800,  w:215, spot:[300, 405, 250],  cls:'happy'},
+  {n:'an_camel',  home:'desert', line:'an_camel',  x:300,  w:235, spot:[1300, 410, 270], cls:'happy'},
+];
+const PL_Q = [
+  ['أين يعيش الجمل؟', 'في الصحراء.'],
+  ['لماذا لا تستطيع السمكة العيش في الصحراء؟', 'لأنّ السمكة تحتاج إلى الماء لتعيش وتتنفّس، ولا يوجد ماء في الصحراء.'],
+  ['ماذا يحدث إذا وضعنا الحيوان في بيئة لا تناسبه؟', 'لا يجد ما يحتاج إليه من غذاء وماء ومأوى، فلا يستطيع العيش فيها.'],
+];
+function qcard(lbl, q, ans){
+  const c = el('div', 'card low pop');
+  c.innerHTML = `<div class="qrow"><span class="lbl">${lbl}</span><button type="button" class="reveal">إظهار الإجابة</button></div><h3>${q}</h3><p class="ans">${ans}</p>`;
+  const b = c.querySelector('.reveal');
+  b.addEventListener('click', () => { ac(); sfx.pop(); c.classList.add('open'); b.remove(); });
+  sceneEl.appendChild(c); return c;
+}
+function animals(){
+  scene(async c => {
+    mark('animals', animals);
+    stage.classList.add('pre');
+    setBg('bg_book', {kb:false});
+    preload(['an_i','an_camel','an_fish','an_monkey','an_x','an_w']);
+    sceneEl.appendChild(el('div', 'pl-head', `<span class="kick">تعلّم قبلي</span><h1>الحيوانات الضائعة</h1>`));
+    const tm = el('button', 'pl-timer', `<svg viewBox="0 0 120 120"><circle class="tr" cx="60" cy="60" r="52"/><circle class="tp" cx="60" cy="60" r="52"/></svg><b>٣:٠٠</b><small>دقائق</small>`);
+    tm.type = 'button'; tm.setAttribute('aria-label', 'المؤقّت: المسيه للإيقاف المؤقّت'); sceneEl.appendChild(tm);
+    plTimer(tm, 180);
+    const habs = HABS.map(h => { const e = el('div', 'hab ' + h.k, `<span class="nm">${h.t}</span>`); e.style.left = h.x + 'px'; e.style.backgroundImage = `url(${IMG.b('hab_' + h.k)})`; sceneEl.appendChild(e); return {...h, el:e}; });
+    const tray = el('div', 'pl-tray', `<span class="lbl">حيوانات ضائعة</span>`); sceneEl.appendChild(tray);
+    let placed = 0, finish;
+    const allHome = new Promise(r => finish = r);
+    LOST.forEach((a, i) => {
+      const it = makeItem(a.n, a.x, 765, a.w, a);
+      it.classList.add('lost'); it.appendChild(el('span', 'qm', '؟'));
+      it.style.opacity = 0; later(() => { it.style.transition = 'opacity .5s'; it.style.opacity = 1; later(() => it.style.transition = '', 520); }, 300 + i * 220);
+      draggable(it, {
+        targets: () => habs,
+        onDrop: (d, hit) => {
+          if (hit.k !== a.home){
+            sfx.buzz(); hit.el.classList.add('no'); later(() => hit.el.classList.remove('no'), 600);
+            later(() => { d.classList.add('wrong'); later(() => d.classList.remove('wrong'), 460); }, 420);
+            say('an_x');
+            return false;
+          }
+          place(d, ...a.spot); d.classList.remove('lost'); d.classList.add(a.cls);
+          const q = d.querySelector('.qm'); if (q) q.remove();
+          hit.el.classList.add('done'); checkMark(hit.x + 200, 160);
+          sfx.ding(); confetti(50); say(a.line);
+          if (++placed === LOST.length) finish();
+          return true;
+        }
+      });
+    });
+    await c.sleep(900);
+    await c.say('an_i');
+    await c.wait(allHome);
+    await c.sleep(2600);
+    tray.style.opacity = 0;
+    sfx.fanfare(); confetti(200);
+    await c.say('an_w');
+    for (let i = 0; i < PL_Q.length; i++){
+      const k = qcard('سؤال للمعلّمة', PL_Q[i][0], PL_Q[i][1]);
+      await c.cta('التالي');
+      k.remove();
+    }
+    smurfs();
+  });
+}
+
+/* --- 0c. the Smurfs video (the teacher's own clip) --- */
+const ON_SITE = /(^|\.)github\.io$/.test(location.hostname);
+let LOCAL_CLIP = null; // on the public site the teacher plays her own video from this device; it is never uploaded
+function smurfs(){
+  scene(async c => {
+    mark('smurfs', smurfs);
+    setBg('bg_book', {kb:false, dim:true});
+    if (!MEDIA.smurfs && !LOCAL_CLIP){
+      const box = el('div', 'mr-panel pop', `<h3>فيديو المعلّمة</h3><p>اختاري فيديو السنافر من جهازك ليُعرض هنا. يُعرض من جهازك مباشرة، ولا يُرفع إلى أي مكان.</p><label class="mr-again">اختاري الفيديو من جهازك<input type="file" accept="video/*" hidden></label>`);
+      sceneEl.appendChild(box);
+      const inp = box.querySelector('input');
+      const file = await c.wait(Promise.race([
+        new Promise(r => inp.addEventListener('change', () => { if (inp.files && inp.files[0]) r(inp.files[0]); })),
+        cta('تخطّي الفيديو').then(() => null),
+      ]));
+      sceneEl.querySelectorAll('.cta,.mr-panel').forEach(e => e.remove());
+      if (file){ ac(); LOCAL_CLIP = URL.createObjectURL(file); }
+    }
+    let key = MEDIA.smurfs ? 'smurfs' : null;
+    if (!key && LOCAL_CLIP){ MEDIA.__local = {src: LOCAL_CLIP, cues: []}; key = '__local'; }
+    if (key){ const v = playVideo(c, key); if (v) await c.wait(v); }
+    await c.cta('هيا نبدأ المغامرة!');
+    dropVideo();
+    mystery();
+  });
+}
+
+/* --- 1. mystery box --- */
+function mystery(){
+  scene(async c => {
+    mark('mystery', mystery);
+    setBg('bg_room', {dim:true});
+    preload(['box_q']);
+    const box = prop('mysterybox', {x:800, y:470, w:360, cls:'float'});
+    const hint = tag('المسوا الصندوق الغامض', 'purple', 800, 700);
+    await c.wait(new Promise(r => { box.style.pointerEvents = 'auto'; box.style.cursor = 'pointer'; box.addEventListener('pointerdown', () => { ac(); r(); }, {once:true}); }));
+    hint.remove(); box.classList.remove('float'); box.classList.add('shake'); sfx.thud();
+    await c.sleep(500); flash(); sfx.whoosh(); box.style.opacity = 0; box.style.scale = 1.4;
+    const foods = ['apple','dates','milk','candy','soda'];
+    const xs = [320, 560, 800, 1040, 1280];
+    foods.forEach((f,i) => { const p = prop(f, {x:800, y:470, w:60}); later(() => movePropTo(p, xs[i], 430 + (i%2)*40, 220), 60 + i*120); });
+    await c.sleep(900);
+    await c.say('box_q');
+    await c.cta('افتحوا الكتاب السحري');
+    opening();
+  });
+}
+
+/* --- 2. opening: the magic book --- */
+function opening(){
+  scene(async c => {
+    mark('opening', opening);
+    preload(['op_1','op_2','op_3']);
+    const v = playVideo(c, 'op');
+    let usedVideo = false;
+    if (v) usedVideo = await c.wait(v);
+    if (!usedVideo) {
+      setBg('bg_room');
+      actor('boy', {x:420, bottom:40, h:520, enter:'left'});
+      await c.sleep(1000);
+      const glow = prop('chest_open', {x:1040, y:600, w:10, cls:'glowing'}); glow.style.opacity = 0;
+      await c.say('op_1');
+      sfx.sparkle(); glow.style.opacity = 1; glow.style.width = '380px';
+      await c.sleep(900); flash(); sfx.page();
+      setBg('bg_book');
+      glow.remove();
+      moveActor('boy', 1420, 30);
+      const stars = [];
+      for (let i=0;i<N_STARS;i++){ const s = prop('star', {x:820, y:420, w:20, cls:'glowing'}); stars.push(s);
+        later(() => { const a = Math.PI*(.15 + i*.7/(N_STARS-1)); movePropTo(s, 820 + Math.cos(a)*-520*(i%2?1:.85), 420 - Math.sin(a)*300, 110); }, 100 + i*140); }
+      sfx.sparkle();
+      await c.say('op_2');
+      stars.forEach((s,i) => { const r = rectOf(hud.children[i]); movePropTo(s, r.x + r.w/2, r.y + r.h/2, 40); s.style.opacity = .3; });
+      await c.sleep(900); stars.forEach(s => s.remove());
+      await c.say('op_3');
+    }
+    await c.cta('نحن مستعدّون!');
+    dropVideo();
+    map();
+  });
+}
+
+/* --- 3. map of the book --- */
+const MAP = [
+  {k:'s1', t:'قرية المدرّجات', face:'salloum'},
+  {k:'s2', t:'شراب القوة', face:'nakhla'},
+  {k:'s3', t:'لغز الحقيبة', face:'reem'},
+  {k:'s4', t:'سلة الجدة', face:'redhood'},
+  {k:'s5', t:'بلّورة الماء', face:'maha'},
+  {k:'s6', t:'مرآة الغذاء', item:'mirror'},
+  {k:'s7', t:'كنز نزوى', face:'grandpa'},
+  {k:'s8', t:'متاهة الأبطال', face:'boy'},
+  {k:'s9', t:'المهمة السرية', item:'envelope'},
+];
+const MAP_POS = [[1335,655],[1150,430],[1000,640],[680,450],[470,540],[1170,250],[640,235],[420,322],[168,445]];
+function map(){
+  scene(async c => {
+    mark('map', map);
+    setBg('bg_map', {kb:false});
+    const next = MAP.findIndex(m => !DONE.has(m.k));
+    MAP.forEach((m,i) => {
+      const b = el('button', 'med onmap' + (m.item ? ' item' : '') + (DONE.has(m.k) ? ' done' : '') + (i === next ? ' next' : ''));
+      b.type = 'button';
+      b.innerHTML = `<span class="ring"><img class="f-${m.face || 'item'}" src="${m.item ? IMG.i(m.item) : IMG.c(m.face)}" alt=""></span><span class="num">${arNum(i+1)}</span>${DONE.has(m.k) ? `<img class="badge" src="${IMG.i('star')}" alt="">` : ''}<span class="name">${m.t}</span>`;
+      b.setAttribute('aria-label', `المحطة ${i+1}: ${m.t}`);
+      b.style.left = MAP_POS[i][0] + 'px'; b.style.top = MAP_POS[i][1] + 'px';
+      b.addEventListener('click', () => { ac(); sfx.page(); STATIONS[m.k](); });
+      sceneEl.appendChild(b);
+    });
+    const all = MAP.every(m => DONE.has(m.k));
+    const f = el('button', 'med onmap final' + (all ? ' next' : ' locked'));
+    f.type = 'button';
+    f.innerHTML = `<span class="ring"><img src="${IMG.i('chest_closed')}" alt=""></span><span class="name">كنز الصحة</span>`;
+    f.style.left = '330px'; f.style.top = '175px';
+    f.addEventListener('click', () => { ac(); sfx.page(); finale(); });
+    sceneEl.appendChild(f);
+    const hintTxt = next >= 0 ? `المسوا المحطة ${arNum(next+1)} لتبدأ المغامرة` : 'جمعتم النجوم التسع! افتحوا كنز الصحة';
+    tag(hintTxt, 'purple', 800, 805);
+  });
+}
+
+/* --- generic station frame --- */
+let NEXT_PHASE = 'teaser';
+async function stationFrame(c, key, {teaser, game, win, ask, next, go}){
+  const phase = NEXT_PHASE; NEXT_PHASE = 'teaser';
+  if (phase !== 'game'){
+    mark(key + ':teaser', () => STATIONS[key]('teaser'));
+    const v = playVideo(c, key);
+    let usedVideo = false;
+    if (v) usedVideo = await c.wait(v);
+    if (!usedVideo) await teaser();
+    await c.cta(go || 'هيا نساعد!');
+    dropVideo();
+  }
+  mark(key + ':game', () => STATIONS[key]('game'));
+  GAME_MODE = true;
+  try { await game(); } finally { GAME_MODE = false; }
+  await win();
+  if (ask){ const k = card('سؤال للمعلّمة', ask[0], ask[1]); await c.cta('التالي'); k.remove(); }
+  await awardStar(c, +key[1]);
+  DONE.add(key);
+  if (next) await next();
+  await c.sleep(400);
+  map();
+}
+
+/* --- S1: Jebel Akhdar terraces --- */
+function s1(){
+  scene(async c => {
+    preload(['s1_a','s1_b','s1_c','s1_g','s1_x','s1_w','s1_n']);
+    await stationFrame(c, 's1', {
+      teaser: async () => {
+        setBg('bg_village');
+        actor('salloum', {x:1150, bottom:60, h:420, enter:'fade', cls:'sleepy'});
+        prop('candy', {x:1330, y:770, w:190}); prop('soda', {x:990, y:790, w:80});
+        await c.sleep(600);
+        actor('saeed', {x:430, bottom:50, h:560, enter:'left'});
+        await c.sleep(1000);
+        await c.say('s1_a'); await c.say('s1_b');
+        ACT.saeed.classList.add('glow'); sfx.sparkle();
+        await c.say('s1_c');
+      },
+      game: async () => {
+        clearScene(); setBg('bg_village', {kb:false});
+        actor('salloum', {x:170, bottom:40, h:360, cls:'sleepy'});
+        const basket = target('basket', 600, 620, 440);
+        const cnt = counter(4, 600, 330);
+        const pool = shuffle([['apple',1],['banana',1],['carrot',1],['cucumber',1],['candy',0],['soda',0]]);
+        const pos = [[1000,300],[1190,300],[1380,300],[1000,560],[1190,560],[1380,560]];
+        let got = 0;
+        await c.wait(new Promise(res => {
+          pool.forEach(([n,ok],i) => { const it = makeItem(n, pos[i][0], pos[i][1], 170, {ok});
+            draggable(it, {targets: () => [{el:basket}], onDrop: d => {
+              if (!d.data.ok){ sfx.buzz(); basket.classList.add('shake'); later(()=>basket.classList.remove('shake'), 500); sayNow('s1_x'); return false; }
+              const slots = [[480,560],[560,540],[650,545],[730,565]];
+              place(d, slots[got][0], slots[got][1], 140); got++; cnt.set(got); sfx.ding(); praise();
+              if (got === 4) later(res, 700); return true; } }); });
+          say('s1_g');
+        }));
+      },
+      win: async () => {
+        basketDone(); setActorImg('salloum','salloum_happy'); ACT.salloum.classList.remove('sleepy'); sizeActor('salloum', 420);
+        moveActor('salloum', 1150, 60); ACT.salloum.classList.add('hop'); confetti(80);
+        await c.say('s1_w');
+      },
+      ask: ['ما الفاكهة التي اخترتها؟ وما الخضار الذي اخترته؟', 'التقويم: اذكر فاكهة وخضارًا.'],
+      next: async () => { actor('boy', {x:1450, bottom:30, h:440, enter:'right'}); await c.sleep(700); await c.say('s1_n'); }
+    });
+  });
+  function basketDone(){ document.querySelectorAll('.target').forEach(t => t.classList.add('done')); }
+}
+
+/* --- S2: Captain Palm's drink --- */
+function s2(){
+  const ING = [['milk',1],['water',1],['banana',1],['strawberry',1],['orange',1],['dates',1],['candy',0],['sugar',0]];
+  const FRUIT = ['banana','strawberry','orange','dates'];
+  function outcome(keys){
+    if (keys.some(k => k === 'candy' || k === 'sugar')) return {img:'d_bad', line:'d_bad', bad:true};
+    const fr = keys.filter(k => FRUIT.includes(k)), milk = keys.includes('milk');
+    if (milk){
+      if (fr.length === 1){
+        if (fr[0] === 'banana') return {img:'d_banana', line:'d_banana'};
+        if (fr[0] === 'strawberry') return {img:'smoothie', line:'d_strawberry'};
+        if (fr[0] === 'dates') return {img:'d_dates', line:'d_dates'};
+      }
+      return {img:'d_mixshake', line:'d_mixshake'};
+    }
+    if (fr.length === 1 && fr[0] === 'orange') return {img:'d_orange', line:'d_orange'};
+    return {img:'d_juice', line:'d_juice'};
+  }
+  let drink = null;
+  scene(async c => {
+    preload(['s2_a','s2_b','s2_g','s2_w','s2_t','s2_n','d_bad','d_banana','d_dates','d_strawberry','d_mixshake','d_orange','d_juice']);
+    await stationFrame(c, 's2', {
+      teaser: async () => {
+        setBg('bg_lab');
+        actor('nakhla', {x:1340, bottom:50, h:600, enter:'top'});
+        sfx.whoosh(); await c.sleep(1100); ACT.nakhla.classList.add('tired');
+        await c.say('s2_a');
+        ING.forEach(([n],i) => { const p = prop(n, {x:790, y:540, w:20, cls:'float'}); later(() => movePropTo(p, 270 + i*106, 250 + (i%2)*70, 110), 80 + i*110); });
+        sfx.sparkle(); await c.sleep(900);
+        await c.say('s2_b');
+      },
+      game: async () => {
+        clearScene(); setBg('bg_lab', {kb:false});
+        actor('nakhla', {x:1360, bottom:40, h:560, cls:'tired'});
+        const bl = target('blender', 790, 590, 300);
+        const cnt = counter(3, 790, 345);
+        drink = null;
+        while (!drink){
+          sceneEl.querySelectorAll('.item').forEach(x => x.remove()); cnt.set(0);
+          const picks = [];
+          await c.wait(new Promise(res => {
+            shuffle(ING).forEach(([n,ok],i) => { const it = makeItem(n, 150 + i*138, 215 + (i%2)*20, 112, {ok});
+              draggable(it, {targets: () => picks.length < 3 ? [{el:bl}] : [], onDrop: d => {
+                const slots = [[750,590],[830,580],[790,520]];
+                place(d, slots[picks.length][0], slots[picks.length][1], 95); picks.push(d.dataset.k); cnt.set(picks.length); sfx.pop();
+                if (picks.length === 3) later(res, 500); return true; } }); });
+            say('s2_g');
+          }));
+          bl.classList.add('spin'); sfx.blend();
+          sceneEl.querySelectorAll('.item.placed').forEach(d => { d.style.opacity = 0; });
+          await c.sleep(1300); bl.classList.remove('spin');
+          const out = outcome(picks);
+          const g = prop(out.img, {x:1060, y:600, w:10, cls:'glowing'}); await c.sleep(30); g.style.width = '230px';
+          if (out.bad){ sfx.buzz(); await c.sleep(500); g.classList.add('shake'); await c.say('d_bad'); g.remove(); }
+          else { sfx.sparkle(); drink = out; }
+        }
+      },
+      win: async () => {
+        ACT.nakhla.classList.remove('tired'); ACT.nakhla.classList.add('hop'); confetti(80);
+        await c.say(drink.line); await c.say('s2_w'); await c.say('s2_t');
+      },
+      ask: ['ماذا نضيف إلى الخلاط؟ ولماذا لا نضيف الحلوى والسكر؟', 'التقويم: اختر ثلاثة مكونات مناسبة. الماء هو الخيار الأساسي لإرواء العطش.'],
+      next: async () => { actor('boy', {x:1450, bottom:30, h:440, enter:'right'}); document.getElementById('alarm').classList.add('on'); sfx.alarm(); await c.say('s2_n'); document.getElementById('alarm').classList.remove('on'); }
+    });
+  });
+}
+
+/* --- S3: the lunch bag mystery (one identical bag per group, a race) --- */
+function s3(){
+  scene(async c => {
+    preload(['s3_a','s3_b','s3_g','s3_x','s3_w','s3_n','g_win1','g_win2','g_win3']);
+    await stationFrame(c, 's3', {
+      teaser: async () => {
+        setBg('bg_detective');
+        const al = document.getElementById('alarm'); al.classList.add('on'); sfx.alarm();
+        actor('reem', {x:360, bottom:50, h:580, enter:'left'});
+        const bag = prop('lunchbag', {x:1050, y:600, w:440}); bag.classList.add('pop');
+        ['chips','candy','soda'].forEach((n,i) => prop(n, {x:930 + i*120, y:470, w:130, cls:'pop'}));
+        await c.sleep(1100); al.classList.remove('on');
+        await c.say('s3_a'); await c.say('s3_b');
+      },
+      game: async () => {
+        clearScene(); setBg('bg_detective', {kb:false});
+        actor('reem', {x:105, bottom:20, h:340});
+        const BX = [1230, 830, 430];
+        const bags = BX.map((x,i) => { const t = target('lunchbag', x, 680, 370); t.removed = 0; t.added = 0; t.gi = i; tag('المجموعة ' + '١٢٣'[i], 'purple', x, 395); return t; });
+        let rank = 0, doneRes;
+        const finished = new Promise(r => doneRes = r);
+        const check = b => {
+          if (b.finished || b.removed < 3 || b.added < 3) return;
+          b.finished = true; rank++; b.classList.add('done'); medal(parseFloat(b.style.left) + 150, 545, rank); sfx.ding();
+          if (rank === 1){ sfx.fanfare(); sayNow('g_win' + (b.gi + 1)); confetti(60); } else praise();
+          if (rank === 3) later(doneRes, 2400);
+        };
+        bags.forEach(b => { const bx = parseFloat(b.style.left);
+          shuffle(['apple','candy','chips','soda']).forEach((n,j) => { const it = makeItem(n, bx - 120 + j*80, 610, 92, {ok: n === 'apple'}); it.classList.add('tap');
+            it.addEventListener('pointerdown', e => { e.preventDefault(); ac();
+              if (it.data.ok){ sfx.pop(); it.classList.add('wrong'); later(()=>it.classList.remove('wrong'),460); sayNow('s3_x'); return; }
+              if (it.classList.contains('bye')) return;
+              sfx.whoosh(); it.classList.remove('home'); it.classList.add('bye'); it.style.left = (bx < 800 ? -220 : 1820) + 'px'; it.style.top = '-140px'; later(() => it.remove(), 800);
+              b.removed++; check(b); }); }); });
+        ['bread','egg','cucumber','carrot','water'].forEach((n,i) => { const it = makeItem(n, 1330 - i*155, 225, 120, {});
+          draggable(it, {clone:true, targets: () => bags.filter(b => b.added < 3).map(b => ({el:b})), onDrop: (d, hit) => {
+            const b = hit.el; const bx = parseFloat(b.style.left);
+            place(d, bx - 95 + b.added*95, 528 + (b.added%2)*10, 86); b.added++; sfx.ding(); check(b); return true; } }); });
+        say('s3_g');
+        await c.wait(finished);
+      },
+      win: async () => {
+        ACT.reem.classList.add('hop'); confetti(80);
+        await c.say('s3_w');
+      },
+      ask: ['ما الأطعمة المناسبة لفسحتنا المدرسية؟', 'التقويم الاستدلالي: ماذا تنصح زميلًا يحضر الحلويات والمشروبات الغازية كل يوم؟'],
+      next: async () => { sfx.page(); await c.say('s3_n'); }
+    });
+  });
+}
+
+/* --- S4: grandma's basket --- */
+function s4(){
+  const GROUP = {bread:'g', rakhal:'g', egg:'p', fish:'p', carrot:'v', tomato:'v', cucumber:'v', apple:'f', banana:'f', milk:'d', laban:'d'};
+  scene(async c => {
+    preload(['s4_a','s4_b','s4_g','s4_x','s4_w','s4_n','g_win1','g_win2','g_win3']);
+    await stationFrame(c, 's4', {
+      teaser: async () => {
+        setBg('bg_forest');
+        actor('redhood', {x:820, bottom:60, h:520, enter:'right', cls:'walk'});
+        await c.sleep(1100); ACT.redhood.classList.remove('walk'); ACT.redhood.style.rotate = '-8deg'; sfx.thud();
+        const fs = ['bread','egg','carrot','apple','milk','banana','cucumber','laban'];
+        fs.forEach((n,i) => { const p = prop(n, {x:820, y:640, w:30}); later(() => movePropTo(p, 260 + i*155, 690 + (i%3)*45, 115), 60 + i*70); });
+        await c.sleep(500); ACT.redhood.style.rotate = '0deg';
+        await c.say('s4_a');
+        moveActor('redhood', 1400, 60);
+        [330, 700, 1070].forEach((x,i) => later(() => prop('basket', {x, y:430, w:190, cls:'pop'}), 300 + i*200));
+        await c.sleep(700);
+        await c.say('s4_b');
+      },
+      game: async () => {
+        clearScene(); setBg('bg_forest', {kb:false});
+        actor('redhood', {x:1460, bottom:30, h:460});
+        const bx = [1100, 690, 280];
+        const baskets = bx.map((x,i) => { const t = target('basket', x, 660, 320); t.items = []; t.groups = new Set(); t.gi = i; tag('المجموعة ' + '١٢٣'[i], 'purple', x, 440); return t; });
+        const pantry = ['bread','rakhal','egg','fish','carrot','tomato','apple','banana','milk','laban'];
+        let full = 0;
+        await c.wait(new Promise(res => {
+          pantry.forEach((n,i) => { const it = makeItem(n, 1460 - i*136 - 40, 230 + (i%2)*60, 112, {g:GROUP[n]});
+            draggable(it, {clone:true, targets: () => baskets.filter(b => b.groups.size < 4).map(b => ({el:b})), onDrop: (d, hit) => {
+              const b = hit.el;
+              if (b.groups.has(d.data.g)){ sfx.buzz(); b.classList.add('shake'); later(()=>b.classList.remove('shake'),500); sayNow('s4_x'); return false; }
+              b.groups.add(d.data.g); const k = b.groups.size;
+              const bxp = parseFloat(b.style.left);
+              place(d, bxp - 105 + (k-1)*70, 600 - ((k%2)*14), 92); sfx.ding();
+              if (k === 4){ b.classList.add('done'); full++; medal(bxp + 125, 545, full); if (full === 1){ sfx.fanfare(); sayNow('g_win' + (b.gi + 1)); confetti(60); } else praise(); if (full === 3) later(res, 2400); }
+              return true; } }); });
+          say('s4_g');
+        }));
+      },
+      win: async () => { ACT.redhood.classList.add('hop'); confetti(80); await c.say('s4_w'); },
+      ask: ['لماذا لم نملأ السلة بنوع واحد من الغذاء؟', 'التقويم: لماذا نحتاج إلى أنواع مختلفة من الطعام؟ تشرح كل مجموعة اختياراتها.'],
+      next: async () => { sfx.page(); await c.say('s4_n'); }
+    });
+  });
+}
+
+/* --- S5: the water crystal at the falaj --- */
+function s5(){
+  scene(async c => {
+    preload(['s5_a','s5_b','s5_g','s5_x','s5_w','s5_n']);
+    const order = shuffle([['water',1],['sodabottle',0],['juice',0]]);
+    const BX = [920, 1140, 1360];
+    await stationFrame(c, 's5', {
+      teaser: async () => {
+        setBg('bg_falaj');
+        actor('maha', {x:400, bottom:50, h:580, enter:'fade'});
+        await c.sleep(900);
+        const cr = prop('crystal', {x:420, y:520, w:90, cls:'glowing'});
+        setActorImg('maha', 'maha_sad');
+        order.forEach(([n],i) => later(() => prop(n, {x:BX[i], y:640, w:150, cls:'pop'}), 300 + i*200));
+        await c.sleep(300);
+        await c.say('s5_a');
+        sfx.whoosh(); movePropTo(cr, BX[order.findIndex(o=>o[1])], 640, 20); await c.sleep(800); cr.remove();
+        await c.say('s5_b');
+      },
+      game: async () => {
+        clearScene(); setBg('bg_falaj', {kb:false});
+        actor('maha', {img:'maha_sad', x:360, bottom:40, h:560});
+        let won = false;
+        await c.wait(new Promise(res => {
+          order.forEach(([n,ok],i) => { const it = makeItem(n, BX[i] - 60, 600, 190, {ok}); it.classList.add('tap');
+            it.addEventListener('pointerdown', e => { e.preventDefault(); ac(); if (won) return;
+              if (!it.data.ok){ sfx.buzz(); it.classList.add('wrong'); later(()=>it.classList.remove('wrong'),460); sayNow('s5_x'); return; }
+              won = true; sfx.sparkle(); it.style.filter = 'drop-shadow(0 0 34px rgba(120,210,255,1))';
+              const cr = prop('crystal', {x:BX[i] - 60, y:600, w:30, cls:'glowing', z:30}); later(() => movePropTo(cr, BX[i] - 60, 330, 150), 60);
+              later(res, 1200); }); });
+          say('s5_g');
+        }));
+      },
+      win: async () => {
+        const cr = document.querySelector('.prop.glowing'); if (cr){ movePropTo(cr, 380, 520, 80); await c.sleep(800); cr.remove(); }
+        setActorImg('maha', 'maha'); ACT.maha.classList.add('glow'); ACT.maha.classList.add('hop'); confetti(80);
+        await c.say('s5_w');
+      },
+      ask: ['متى نحتاج إلى شرب الماء؟', 'اربطي السؤال بالعطش بعد اللعب والحرّ في عُمان. التقويم: ما أفضل مشروب لإرواء العطش؟'],
+      next: async () => { sfx.page(); await c.say('s5_n'); }
+    });
+  });
+}
+
+/* --- S6: the runner's balanced plate --- */
+/* the healthy-food mirror runs in its own window, where the board's camera is allowed;
+   if the window is blocked it is shown inside the station without the camera */
+const MIRROR_URL = 'https://shooogp.github.io/healthy-mirror/';
+function s6(){
+  scene(async c => {
+    preload(['s6m_a','s6m_w','s6_n']);
+    await stationFrame(c, 's6', {
+      go: 'افتحوا المرآة!',
+      teaser: async () => {
+        setBg('bg_book', {dim:true});
+        const m = prop('mirror', {x:800, y:395, w:20, cls:'glowing'});
+        sfx.sparkle(); await c.sleep(40); m.style.width = '400px';
+        await c.sleep(700); m.classList.add('float');
+        await c.say('s6m_a');
+      },
+      game: async () => {
+        // on the public site the mirror is on the same site, so it runs here with the camera; elsewhere it opens in its own window
+        let w = null;
+        if (!ON_SITE){ try { w = window.open(MIRROR_URL, '_blank'); } catch(e){} }
+        clearScene(); setBg('bg_book', {kb:false, dim:true});
+        stage.classList.add('lowcta');
+        if (w){
+          const box = el('div', 'mr-panel pop', `<img src="${IMG.i('mirror')}" alt=""><h3>المرآة مفتوحة في نافذة جديدة</h3><p>بعد أن ينتهي الصف من المرآة، ارجعي إلى هذه النافذة واضغطي «انتهينا من المرآة».</p><button type="button" class="mr-again">افتحي المرآة مرة أخرى</button>`);
+          sceneEl.appendChild(box);
+          box.querySelector('.mr-again').addEventListener('click', () => { ac(); sfx.pop(); try { window.open(MIRROR_URL, '_blank'); } catch(e){} });
+        } else {
+          const fr = el('iframe', 'mr-frame'); fr.src = MIRROR_URL; fr.title = 'مرآة الغذاء الصحي'; fr.allow = 'camera; fullscreen; autoplay';
+          sceneEl.appendChild(fr);
+        }
+        await c.cta('انتهينا من المرآة');
+        sceneEl.querySelectorAll('.mr-panel,.mr-frame').forEach(e => e.remove());
+      },
+      win: async () => {
+        prop('mirror', {x:800, y:400, w:340, cls:'glowing float pop'});
+        sfx.fanfare(); confetti(120);
+        await c.say('s6m_w');
+      },
+      ask: ['ما الأطعمة التي رأيتموها في المرآة ونختارها كثيرًا؟ وأيّها نأكل منه قليلًا؟', 'نقاش بعد مرآة الغذاء الصحي'],
+      next: async () => { actor('boy', {x:1300, bottom:30, h:440, enter:'right'}); await c.sleep(700); await c.say('s6_n'); }
+    });
+  });
+}
+
+/* --- S7: Nizwa Fort, Omani food treasure --- */
+function s7(){
+  const MANY = {arsiya:1, harees:1, qashe:1, rakhal:1, laban:1, fruitveg:1, halwa:0, luqaimat:0, coffee:0, qurs:0, taqliya:0, maleh:0};
+  let many, few;
+  scene(async c => {
+    preload(['s7_a','s7_b','s7_c','s7_d','s7_g','s7_x','s7_e','s7_w','s7_w2']);
+    await stationFrame(c, 's7', {
+      teaser: async () => {
+        setBg('bg_nizwa');
+        actor('boy', {x:420, bottom:50, h:450, enter:'left', cls:'walk'});
+        actor('grandpa', {x:620, bottom:50, h:560, enter:'left', cls:'walk'});
+        await c.sleep(1100); ACT.boy.classList.remove('walk'); ACT.grandpa.classList.remove('walk');
+        await c.say('s7_a'); await c.say('s7_b');
+        const ch = prop('chest_closed', {x:1150, y:680, w:320, cls:'pop'});
+        await c.sleep(600); ch.src = IMG.i('chest_open'); flash(); sfx.whoosh();
+        Object.keys(MANY).forEach((n,i) => { const p = prop(n, {x:1150, y:640, w:30}); later(() => movePropTo(p, 200 + i*112, 210 + (i%2)*80, 104), 60 + i*80); });
+        await c.say('s7_c');
+        prop('palmbasket', {x:960, y:470, w:200, cls:'pop'}); prop('palmbasket', {x:1340, y:470, w:200, cls:'pop'});
+        await c.say('s7_d');
+      },
+      game: async () => {
+        clearScene(); setBg('bg_nizwa', {kb:false});
+        actor('boy', {x:740, bottom:30, h:380}); actor('grandpa', {x:880, bottom:30, h:450});
+        many = target('palmbasket', 1270, 650, 390); tag('نختاره كثيرًا', 'green', 1270, 440);
+        few = target('palmbasket', 330, 650, 390); tag('نأكل منه قليلًا', 'orange', 330, 440);
+        many.n = 0; few.n = 0;
+        const list = shuffle(Object.keys(MANY));
+        let placed = 0, tip = false, dates = false, halwa = false;
+        await c.wait(new Promise(res => {
+          list.forEach((n,i) => { const it = makeItem(n, 1430 - (i%6)*220, 205 + Math.floor(i/6)*135, 118, {many:MANY[n]});
+            draggable(it, {targets: () => [{el:many},{el:few}], onDrop: (d, hit) => {
+              const right = (hit.el === many) === !!d.data.many;
+              if (!right){ sfx.buzz(); hit.el.classList.add('shake'); later(()=>hit.el.classList.remove('shake'),500); sayNow('s7_x'); return false; }
+              const b = hit.el; const bxp = parseFloat(b.style.left); const k = b.n++;
+              place(d, bxp - 115 + (k%3)*115, 612 - Math.floor(k/3)*62, 92); sfx.ding(); placed++;
+              if (d.dataset.k === 'qurs') dates = true; if (d.dataset.k === 'halwa') halwa = true;
+              if (dates && halwa && !tip){ tip = true; sayNow('s7_e'); } else praise();
+              if (placed === list.length) later(res, tip ? 4200 : 700); return true; } }); });
+          say('s7_g');
+        }));
+      },
+      win: async () => {
+        many.classList.add('done'); few.classList.add('done'); confetti(100);
+        ACT.boy.classList.add('hop');
+        await c.say('s7_w');
+      },
+      ask: ['هذه عرسية عُمانية، أين نضعها؟ وماذا عن الحلوى العُمانية؟', 'تقويم: سمِّ غذاءً عُمانيًا · صنّف العرسية والحلوى · بماذا تنصح من يكثر من الحلوى كل يوم؟'],
+      next: async () => { await c.say('s7_w2'); }
+    });
+  });
+}
+
+/* --- S8: the heroes' maze — final assessment in four levels --- */
+const MZ = {x:22, y:106};
+const MZ_GATES = [{x:800, y:668, dir:-1}, {x:380, y:668, dir:-1}, {x:560, y:405, dir:1}, {x:620, y:150, dir:-1}];
+const MZ_START = [1060, 668], MZ_GOAL = [168, 150];
+const MZ_LEGS = [
+  [[1060,668],[895,668]],
+  [[705,668],[475,668]],
+  [[285,668],[110,668],[110,405],[465,405]],
+  [[655,405],[990,405],[990,150],[715,150]],
+  [[525,150],[268,150]],
+];
+const MZ_DY = [-70, 0, 70];
+const MZ_COL = ['#e0572b', '#1b86c9', '#e39a12'];
+const MZ_LET = ['أ', 'ب', 'ج'];
+const MZ_ORD = ['الأول', 'الثاني', 'الثالث', 'الرابع'];
+const MZ_BULB = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.4 1.1 2.2h5c0-.8.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg>';
+const MZ_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const MZ_Q = [
+  {lv:'معرفة', c:'#1b86c9', line:'s8_q1', q:'أيُّ هذه الأطعمة صحيٌّ نختاره كثيرًا؟',
+   opts:[{p:['candy'], t:'الحلوى'}, {p:['fruits'], t:'الفواكه', ok:1}, {p:['chips'], t:'رقائق البطاطا'}]},
+  {lv:'تطبيق', c:'#1f9a57', line:'s8_q2', oline:'s8_o2', hide:1, q:'جاع فهدٌ بعد التمرين. ماذا يأكل وجبةً خفيفةً صحية؟',
+   opts:[{p:['burger','fries'], t:'برجر وبطاطا مقلية'}, {p:['candy','soda'], t:'حلوى ومشروب غازي'}, {p:['dates','laban'], t:'تمر ولبن', ok:1}]},
+  {lv:'استدلال', c:'#e0572b', line:'s8_q3', oline:'s8_o3', hide:1, q:'لماذا نأكل الحلوى قليلًا؟',
+   opts:[{t:'لأنّ فيها سكّرًا كثيرًا يضرّ أسناننا وأجسامنا', ok:1}, {t:'لأنّ لونها جميل'}, {t:'لأنّها تجعلنا أقوى'}]},
+  {lv:'قدرات عليا', c:'#7c4ddb', line:'s8_q4', oline:'s8_o4', hide:1, q:'صديقكم لا يحبّ الخضراوات. ما أفضل فكرة لمساعدته؟',
+   opts:[{p:['candy'], t:'يأكل الحلوى بدلًا منها'}, {p:['salad'], t:'نُعِدّ له طبقًا ملوّنًا من خضراوات يحبّها', ok:1}, {p:['plate'], t:'يترك وجبته ولا يأكل'}]},
+];
+function mazeSVG(){
+  const route = 'M1110,668 H110 V405 H990 V150 H168';
+  const stubs = 'M600,668 V560 M200,668 V562 M300,405 V500 M830,405 V502 M760,405 V310 M110,405 V305 M990,405 V505 M420,150 V250 M860,150 V245';
+  const halls = MZ_GATES.map(g => `<rect x="${g.x-110}" y="${g.y-110}" width="220" height="220" rx="44"/>`).join('');
+  const flowers = [[60,250],[60,520],[1060,250],[1060,520],[940,545],[250,250],[1075,60],[700,520],[360,540],[1075,740]]
+    .map(([x,y],i) => `<g transform="translate(${x},${y})">${[0,72,144,216,288].map(a => `<circle cx="${Math.cos(a*Math.PI/180)*8}" cy="${Math.sin(a*Math.PI/180)*8}" r="6" fill="${['#ff8fb1','#ffd34d','#ffffff'][i%3]}"/>`).join('')}<circle r="5" fill="#f39c12"/></g>`).join('');
+  const gates = MZ_GATES.map((g,gi) => `<g class="mz-gate">
+      <rect class="bar" x="${g.x-18}" y="${g.y-110}" width="36" height="220" rx="12" fill="#21602a" stroke="#16471d" stroke-width="3"/>
+      ${MZ_DY.map((dy,k) => `<g class="mz-door" data-k="${k}">
+        <rect x="${g.x-24}" y="${g.y+dy-28}" width="48" height="56" rx="9" fill="#f6e2ae"/>
+        <rect class="leaf" x="${g.x-24}" y="${g.y+dy-28}" width="48" height="56" rx="9" fill="#9a6431" stroke="#5e3a17" stroke-width="3"/>
+        <g class="wall"><rect x="${g.x-24}" y="${g.y+dy-28}" width="48" height="56" rx="9" fill="url(#brick)" stroke="#6b2d1c" stroke-width="2"/>
+          <path d="M${g.x-14},${g.y+dy-14} l28,28 M${g.x+14},${g.y+dy-14} l-28,28" stroke="#e8321e" stroke-width="7" stroke-linecap="round"/></g>
+        <circle class="badge" cx="${g.x}" cy="${g.y+dy}" r="21" fill="${MZ_COL[k]}" stroke="#fff" stroke-width="3"/>
+        <text x="${g.x}" y="${g.y+dy+9}" text-anchor="middle" font-family="Lalezar, Tahoma, sans-serif" font-size="26" fill="#fff" pointer-events="none">${MZ_LET[k]}</text>
+      </g>`).join('')}
+      <circle class="num" cx="${g.x}" cy="${g.y-118}" r="20" fill="#4b2a8c" stroke="#fff" stroke-width="3"/>
+      <text x="${g.x}" y="${g.y-109}" text-anchor="middle" font-family="Lalezar, Tahoma, sans-serif" font-size="24" fill="#fff">${arNum(gi+1)}</text>
+    </g>`).join('');
+  return `<svg viewBox="0 0 1110 780" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <pattern id="hedge" width="48" height="48" patternUnits="userSpaceOnUse"><rect width="48" height="48" fill="#2d7836"/>
+        <circle cx="10" cy="12" r="11" fill="#37904a"/><circle cx="34" cy="8" r="9" fill="#286d31"/><circle cx="28" cy="32" r="12" fill="#3a974d"/><circle cx="6" cy="40" r="8" fill="#256630"/><circle cx="44" cy="44" r="7" fill="#40a055"/></pattern>
+      <pattern id="brick" width="24" height="16" patternUnits="userSpaceOnUse"><rect width="24" height="16" fill="#b5532f"/><path d="M0,8 H24 M12,0 V8 M0,8 V16 M24,8 V16" stroke="#7c3218" stroke-width="2"/></pattern>
+      <radialGradient id="goalg"><stop offset="0" stop-color="#fff7cf"/><stop offset="1" stop-color="#f3c74f"/></radialGradient>
+    </defs>
+    <rect width="1110" height="780" rx="34" fill="url(#hedge)" stroke="#173f1c" stroke-width="6"/>
+    ${flowers}
+    <g stroke="rgba(10,40,12,.45)" stroke-width="92" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="${route}"/><path d="${stubs}"/></g>
+    <g fill="rgba(10,40,12,.45)" transform="translate(0,4)">${halls}</g>
+    <g stroke="#b98f4e" stroke-width="82" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="${route}"/><path d="${stubs}"/></g>
+    <g fill="#efd9a4" stroke="#b98f4e" stroke-width="6">${halls}</g>
+    <g stroke="#efd9a4" stroke-width="70" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="${route}"/><path d="${stubs}"/></g>
+    <circle cx="${MZ_START[0]}" cy="${MZ_START[1]}" r="52" fill="#fff0bf" stroke="#e3a92b" stroke-width="6"/>
+    <g class="mz-goal"><circle cx="${MZ_GOAL[0]}" cy="${MZ_GOAL[1]}" r="78" fill="url(#goalg)" stroke="#e3a92b" stroke-width="8"/>
+      <image class="mz-star" href="${IMG.i('star')}" x="${MZ_GOAL[0]-62}" y="${MZ_GOAL[1]-62}" width="124" height="124"/></g>
+    ${gates}
+  </svg>`;
+}
+function setTok(tok, [x, y]){ tok.style.left = (MZ.x + x) + 'px'; tok.style.top = (MZ.y + y) + 'px'; }
+function mzWalk(tok, pts, speed = 430){
+  const id = RUN;
+  return new Promise(res => {
+    let i = 0;
+    const seg = () => {
+      if (id !== RUN || i >= pts.length - 1) return res();
+      const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
+      const T = Math.max(140, Math.hypot(x1 - x0, y1 - y0) / speed * 1000), t0 = performance.now();
+      const step = now => {
+        if (id !== RUN) return res();
+        const k = Math.min(1, (now - t0) / T);
+        setTok(tok, [x0 + (x1 - x0) * k, y0 + (y1 - y0) * k]);
+        if (k < 1) requestAnimationFrame(step); else { i++; seg(); }
+      };
+      requestAnimationFrame(step);
+    };
+    seg();
+  });
+}
+function s8(){
+  let svg, tok;
+  scene(async c => {
+    preload(['s8_a','s8_b','s8_q1','s8_q2','s8_q3','s8_q4','s8_o2','s8_o3','s8_o4','s8_x','s8_w','s8_n']);
+    await stationFrame(c, 's8', {
+      go: 'هيا ندخل المتاهة!',
+      teaser: async () => {
+        setBg('bg_maze');
+        actor('boy', {x:1260, bottom:40, h:500, enter:'right', cls:'walk'});
+        await c.sleep(1000); ACT.boy.classList.remove('walk');
+        await c.say('s8_a');
+        const s = prop('star', {x:790, y:260, w:20, cls:'glowing float'}); sfx.sparkle();
+        await c.sleep(40); s.style.width = '130px';
+        await c.say('s8_b');
+      },
+      game: async () => {
+        clearScene(); setBg('bg_maze', {kb:false, dim:true});
+        const w = el('div'); w.innerHTML = mazeSVG(); svg = w.firstElementChild; svg.classList.add('mz-svg'); sceneEl.appendChild(svg);
+        tok = el('div', 'mz-tok', `<img src="${IMG.c('boy')}" alt="البطل">`); sceneEl.appendChild(tok); setTok(tok, MZ_START);
+        const panel = el('div', 'mz-panel'); sceneEl.appendChild(panel);
+        const gates = [...svg.querySelectorAll('.mz-gate')];
+        const wt = ms => new Promise(r => later(r, ms));
+        await c.sleep(500);
+        tok.classList.add('walk'); await c.wait(mzWalk(tok, MZ_LEGS[0])); tok.classList.remove('walk');
+        for (let L = 0; L < MZ_Q.length; L++){
+          const Q = MZ_Q[L], G = MZ_GATES[L], gate = gates[L], doors = [...gate.querySelectorAll('.mz-door')];
+          const waitPt = MZ_LEGS[L][MZ_LEGS[L].length - 1], exitPt = MZ_LEGS[L + 1][0];
+          gates.forEach((g, i) => g.classList.toggle('active', i === L && !Q.hide));
+          panel.style.setProperty('--c', Q.c);
+          panel.innerHTML = `<div class="mz-steps">${MZ_Q.map((q, i) => `<span class="st${i === L ? ' on' : i < L ? ' ok' : ''}" style="--c:${q.c}"><b>${i < L ? '✓' : arNum(i + 1)}</b>${q.lv}</span>`).join('')}</div>
+            <div class="mz-lvl"><span class="no">المستوى ${MZ_ORD[L]}</span><span class="ty">${Q.lv}</span></div>
+            <h3 class="mz-q">${Q.q}</h3>
+            ${Q.hide ? `<div class="mz-think"><span class="ic">${MZ_BULB}</span><p>فكّروا في الإجابة وناقشوها معًا</p><span class="who">زر المعلّمة</span><button type="button" class="mz-show">${MZ_EYE}إظهار الخيارات</button></div>` : ''}
+            <div class="mz-opts${Q.hide ? ' off' : ''}">${Q.opts.map((o, k) => `<button type="button" class="mz-opt" style="--c:${MZ_COL[k]}"><span class="lt">${MZ_LET[k]}</span>${o.p ? `<span class="pics">${o.p.map(n => `<img src="${IMG.i(n)}" alt="">`).join('')}</span>` : ''}<span class="tx">${o.t}</span></button>`).join('')}</div>`;
+          const btns = [...panel.querySelectorAll('.mz-opt')];
+          say(Q.line);
+          if (Q.hide){
+            await c.wait(new Promise(r => panel.querySelector('.mz-show').addEventListener('click', () => { ac(); sfx.pop(); r(); }, {once:true})));
+            panel.querySelector('.mz-think').remove();
+            const box = panel.querySelector('.mz-opts'); box.classList.remove('off'); box.classList.add('reveal');
+            gate.classList.add('active'); sfx.sparkle();
+            say(Q.oline);
+          }
+          await c.wait(new Promise(res => {
+            let busy = false;
+            const pick = async k => {
+              if (busy || btns[k].classList.contains('no')) return;
+              busy = true; ac(); stopAudio();
+              const dy = MZ_DY[k], front = [G.x - G.dir * 74, G.y + dy], back = [G.x + G.dir * 74, G.y + dy];
+              tok.classList.add('walk'); await mzWalk(tok, [waitPt, front]); tok.classList.remove('walk');
+              if (Q.opts[k].ok){
+                doors[k].classList.add('open'); btns[k].classList.add('yes'); sfx.ding(); praise();
+                await wt(450);
+                tok.classList.add('walk'); await mzWalk(tok, [front, back, exitPt]); tok.classList.remove('walk');
+                gate.classList.remove('active'); gate.classList.add('done');
+                res();
+              } else {
+                doors[k].classList.add('open'); await wt(260);
+                doors[k].classList.add('bad'); sfx.buzz(); tok.classList.add('bump'); btns[k].classList.add('no'); say('s8_x');
+                await wt(700); tok.classList.remove('bump'); doors[k].classList.remove('open');
+                tok.classList.add('walk'); await mzWalk(tok, [front, waitPt]); tok.classList.remove('walk');
+                busy = false;
+              }
+            };
+            btns.forEach((b, k) => b.addEventListener('click', () => pick(k)));
+            doors.forEach((d, k) => d.addEventListener('click', () => pick(k)));
+          }));
+          await c.sleep(300);
+          tok.classList.add('walk'); await c.wait(mzWalk(tok, MZ_LEGS[L + 1])); tok.classList.remove('walk');
+        }
+        panel.querySelectorAll('.mz-steps .st').forEach(s => { s.classList.remove('on'); s.classList.add('ok'); s.querySelector('b').textContent = '✓'; });
+      },
+      win: async () => {
+        svg.querySelector('.mz-goal').classList.add('won'); sfx.fanfare(); confetti(160);
+        await c.say('s8_w');
+      },
+      ask: ['صمّموا وجبة مدرسية متنوّعة لصديقكم: ماذا تضعون فيها؟ ولماذا؟', 'سؤال مفتوح للنقاش · قدرات عليا'],
+      next: async () => { await c.say('s8_n'); }
+    });
+  });
+}
+
+/* --- S9: self-learning — the secret food detective (home mission) --- */
+const MS_ICONS = {
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>',
+  bulb: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.4 1.1 2.2h5c0-.8.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg>',
+  camera: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>',
+};
+const MISSIONS = [
+  {line:'s9_m1', t:'ابحث واكتشف', ic:'search', c:'#1b86c9', d:'ابحث في مطبخ منزلك بمساعدة أحد أفراد أسرتك عن ثلاثة أطعمة تعتقد أنها صحية، وطعام واحد ينبغي التقليل منه.'},
+  {line:'s9_m2', t:'فكّر واستنتج', ic:'bulb', c:'#e39a12', d:'اسأل نفسك: لماذا اخترت هذه الأطعمة؟ وما الذي يجعل بعضها أفضل لصحة جسمي؟'},
+  {line:'s9_m3', t:'التقط الدليل', ic:'camera', c:'#e0572b', d:'ارسم الأطعمة التي اكتشفتها، أو التقط لها صورة بمساعدة أسرتك.'},
+  {line:'s9_m4', t:'قرار المحقق', ic:'check', c:'#1f9a57', d:'اختر غذاءً صحيًا تريد إضافته إلى وجبتك المدرسية غدًا.'},
+];
+const MS_ORD = ['المهمة الأولى', 'المهمة الثانية', 'المهمة الثالثة', 'المهمة الرابعة'];
+function s9(){
+  scene(async c => {
+    preload(['s9_a','s9_b','s9_g','s9_m1','s9_m2','s9_m3','s9_m4','s9_c','s9_w']);
+    await stationFrame(c, 's9', {
+      go: 'افتحوا الرسائل السرية!',
+      teaser: async () => {
+        setBg('bg_kitchen');
+        const env = prop('envelope', {x:640, y:430, w:20, cls:'glowing'});
+        actor('detective', {x:1250, bottom:40, h:600, enter:'right'});
+        await c.sleep(900); sfx.sparkle(); env.style.width = '320px';
+        await c.sleep(600); env.classList.add('float');
+        await c.say('s9_a'); await c.say('s9_b');
+      },
+      game: async () => {
+        clearScene(); setBg('bg_kitchen', {kb:false, dim:true});
+        stage.classList.add('lowcta');
+        actor('detective', {x:1480, bottom:30, h:440});
+        tag('مهمة المحقق الصغير · ١٠ دقائق في المنزل', 'purple', 700, 100);
+        const xs = [1185, 865, 545, 225];
+        const cards = MISSIONS.map((m, i) => {
+          const b = el('button', 'ms' + (i ? ' locked' : ' next'));
+          b.type = 'button'; b.style.left = xs[i] + 'px'; b.style.setProperty('--c', m.c);
+          b.setAttribute('aria-label', MS_ORD[i]);
+          b.innerHTML = `<div class="env"><img src="${IMG.i('envelope')}" alt=""><span class="n">${arNum(i + 1)}</span></div>
+            <div class="open"><div class="ic">${MS_ICONS[m.ic]}</div><div class="mt">${MS_ORD[i]}</div><h4>${m.t}</h4><p>${m.d}</p></div>`;
+          sceneEl.appendChild(b); return b;
+        });
+        say('s9_g');
+        for (let i = 0; i < cards.length; i++){
+          await c.wait(new Promise(r => cards[i].addEventListener('click', () => { ac(); r(); }, {once:true})));
+          cards[i].classList.remove('next'); cards[i].classList.add('opened'); flash(); sfx.page();
+          if (cards[i + 1]){ cards[i + 1].classList.remove('locked'); cards[i + 1].classList.add('next'); }
+          await c.say(MISSIONS[i].line);
+        }
+        await c.sleep(500);
+        cards.forEach(b => b.style.opacity = .15);
+        const dc = el('div', 'dcard pop', `
+          <div class="hd"><span class="mg">${MS_ICONS.search}</span><div><h3>بطاقة المحقق الصغير</h3><p>اكتشافاتي في مطبخ منزلي</p></div><span class="stamp">سرّي</span></div>
+          <div class="fl">
+            <div class="f"><b>أطعمة صحية اكتشفتها:</b><div class="ln">١</div><div class="ln">٢</div><div class="ln">٣</div></div>
+            <div class="f"><b>طعام ينبغي أن أقلل منه:</b><div class="ln"></div></div>
+            <div class="f"><b>غذاء سأضيفه إلى حقيبتي المدرسية:</b><div class="ln"></div></div>
+          </div>
+          <div class="ev">${MS_ICONS.camera.replace(/#fff/g, '#b49766')}<span>الدليل:<br>رسم أو صورة لما اكتشفته</span></div>`);
+        sceneEl.appendChild(dc);
+        sfx.sparkle();
+        await c.say('s9_c');
+        await c.cta('قبلنا المهمة!');
+        dc.remove(); cards.forEach(b => b.style.opacity = 1);
+      },
+      win: async () => {
+        ACT.detective.classList.add('hop'); confetti(120);
+        await c.say('s9_w');
+      },
+    });
+  });
+}
+
+/* --- final: three challenges and the treasure --- */
+const QUIZ = [
+  {line:'f_q1', q:'ما أفضل مشروب لإرواء العطش؟', opts:[{p:['water'], t:'الماء', ok:1},{p:['sodabottle'], t:'المشروب الغازي'},{p:['juice'], t:'العصير المحلّى'}]},
+  {line:'f_q2', q:'أي مجموعة تصلح لوجبة متنوعة؟', opts:[{p:['rice','fish','salad'], t:'أرز وسمك وخضراوات', ok:1},{p:['candy','soda','chips'], t:'حلوى ومشروب غازي ورقائق'},{p:['fries','burger','sodabottle'], t:'بطاطا مقلية وبرجر ومشروب غازي'}]},
+  {line:'f_q3', q:'سالم يتناول الحلوى العُمانية بكثرة كل يوم. بماذا تنصحه؟', opts:[{p:['halwa','fruitveg'], t:'يقلّل منها وينوّع غذاءه', ok:1},{p:['halwa','halwa'], t:'يأكل منها أكثر'},{p:['chips'], t:'يتركها ويأكل رقائق البطاطس'}]},
+];
+const ENDING = [['saeed','e_saeed'],['nakhla','e_nakhla'],['reem','e_reem'],['redhood','e_redhood'],['maha','e_maha'],['fahd','e_fahd'],['grandpa','e_grandpa'],['boy','e_boy']];
+function finale(){
+  scene(async c => {
+    mark('finale', finale);
+    preload(['f_1','f_q1','f_q2','f_q3','f_x','f_key', ...ENDING.map(e=>e[1]), 'e_msg']);
+    setBg('bg_treasure');
+    const chest = prop('chest_closed', {x:800, y:640, w:380});
+    const stars = [];
+    for (let i=0;i<N_STARS;i++){ const r = rectOf(hud.children[i]); const s = prop('star', {x:r.x + r.w/2, y:r.y + r.h/2, w:50, cls:'glowing'}); stars.push(s);
+      later(() => { const a = Math.PI*(i/(N_STARS-1)); movePropTo(s, 800 + Math.cos(a)*330, 400 - Math.sin(a)*180, 92); }, 200 + i*110); }
+    sfx.sparkle(); await c.sleep(1300);
+    chest.classList.add('shake'); sfx.thud();
+    await c.say('f_1');
+    stars.forEach(s => { s.style.opacity = .35; });
+    for (const Q of QUIZ){
+      const k = card('التحدي ' + ['الأول','الثاني','الثالث'][QUIZ.indexOf(Q)], Q.q);
+      const box = el('div', 'opts');
+      await c.wait(new Promise(res => {
+        shuffle(Q.opts).forEach(o => { const b = el('button', 'opt'); b.type = 'button';
+          b.innerHTML = `<div class="pics ${o.p.length > 2 ? 'three' : ''}">${o.p.map(n => `<img src="${IMG.i(n)}" alt="">`).join('')}</div><div class="ot">${o.t}</div>`;
+          b.addEventListener('click', () => { ac(); if (o.ok){ b.classList.add('right'); sfx.ding(); praise(); confetti(60); later(res, 1400); } else { sfx.buzz(); b.classList.add('no'); later(()=>b.classList.remove('no'),460); sayNow('f_x'); } });
+          box.appendChild(b); });
+        sceneEl.appendChild(box);
+        say(Q.line);
+      }));
+      box.remove(); k.remove();
+    }
+    stars.forEach(s => { s.style.opacity = 1; movePropTo(s, 800, 330, 60); });
+    sfx.sparkle(); await c.sleep(900); stars.forEach(s => s.remove()); flash();
+    const key = prop('key', {x:800, y:330, w:10, cls:'glowing float'}); key.style.pointerEvents = 'auto'; key.style.cursor = 'pointer'; await c.sleep(30); key.style.width = '170px';
+    await c.say('f_key');
+    await c.wait(new Promise(r => key.addEventListener('pointerdown', () => { ac(); r(); }, {once:true})));
+    key.classList.remove('float'); movePropTo(key, 800, 620, 80); await c.sleep(800); key.remove();
+    chest.src = IMG.i('chest_open'); chest.style.width = '380px'; flash(); sfx.fanfare(); confetti(220);
+    chest.style.zIndex = 8;
+    const spots = [[130,0],[290,0],[450,0],[1170,0],[1320,0],[1475,0],[1020,0],[590,0]];
+    const H = {saeed:380, nakhla:400, reem:380, redhood:340, maha:360, fahd:370, grandpa:400, boy:340};
+    ENDING.forEach(([n],i) => later(() => actor(n, {x:spots[i][0], bottom:40, h:H[n], enter:'fade'}), i*150));
+    await c.sleep(1600);
+    for (const [n,l] of ENDING){ ACT[n].classList.add('glow'); await c.say(l); ACT[n].classList.remove('glow'); }
+    hideCaption();
+    const bn = el('div', 'banner pop', `<h2>صحتي كنزي، وغذائي سر نشاطي</h2><p>من خيرات عُمان نختار غذاءنا، وبالغذاء المتوازن نحافظ على صحتنا</p>`);
+    sceneEl.appendChild(bn); confetti(200); sfx.fanfare();
+    await c.say('e_msg', {caption:false});
+    await c.cta('العودة إلى البداية');
+    STARS.clear(); DONE.clear(); drawHud(); cover();
+  });
+}
+
+const STATION_FN = {s1, s2, s3, s4, s5, s6, s7, s8, s9};
+const STATIONS = {};
+Object.keys(STATION_FN).forEach(k => { STATIONS[k] = (p) => { NEXT_PHASE = p === 'game' ? 'game' : 'teaser'; STATION_FN[k](); }; });
+
+/* ---------- teacher bar ---------- */
+document.getElementById('b-home').addEventListener('click', () => { ac(); map(); });
+document.getElementById('b-back').addEventListener('click', () => { ac(); sfx.page(); goBack(); });
+document.getElementById('b-skip').addEventListener('click', () => {
+  ac();
+  if (curVideo){ curVideo.currentTime = curVideo.duration || 9999; return; }
+  const b = sceneEl.querySelector('.cta'); if (b){ b.click(); return; }
+  stopAudio();
+});
+document.getElementById('b-again').addEventListener('click', () => { ac(); if (lastLine) say(lastLine); });
+document.getElementById('b-mute').addEventListener('click', e => { muted = !muted; e.currentTarget.classList.toggle('off', muted); if (curAudio) curAudio.muted = muted; if (curVideo) curVideo.muted = muted; });
+document.getElementById('b-full').addEventListener('click', () => { ac(); const d = document; try { if (!d.fullscreenElement) (viewport.requestFullscreen || viewport.webkitRequestFullscreen).call(viewport).catch(()=>{}); else d.exitFullscreen(); } catch(e){} later(fit, 300); });
+document.addEventListener('fullscreenchange', () => setTimeout(fit, 120));
+addEventListener('keydown', e => { if (e.key === 'ArrowLeft' || e.key === ' ' ) { const b = sceneEl.querySelector('.cta'); if (b){ e.preventDefault(); b.click(); } } });
+
+cover();
+</script>
+</body></html>
