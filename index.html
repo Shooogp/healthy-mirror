@@ -35,7 +35,7 @@ button:focus-visible,select:focus-visible{outline:4px solid var(--saffron);outli
   radial-gradient(120% 80% at 50% 0%,#FFF4D9 0%,#F9E3B8 45%,#EBC98F 100%)}
 #bg::after{content:"";position:absolute;inset:auto 0 0 0;height:32%;
   background:repeating-linear-gradient(90deg,#D9A866 0 60px,#CF9C5A 60px 120px);opacity:.55}
-#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s}
+#cam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s;filter:brightness(var(--cam-bright,1))}
 body.has-cam #cam{opacity:1}
 body.mirror #cam{transform:scaleX(-1)}
 #scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
@@ -187,6 +187,11 @@ body.mirror #cam{transform:scaleX(-1)}
 .seg button{flex:1;border:0;background:#fff;padding:.5em;font-weight:600}
 .seg button+button{border-inline-start:2.5px solid var(--ink)}
 .seg button.on{background:var(--ink);color:var(--paper)}
+.bright{display:flex;flex-direction:column;gap:6px}
+.bright-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.bright-head output{font-weight:800;font-variant-numeric:tabular-nums}
+#brightRange{width:100%;height:34px;margin:0;accent-color:var(--leaf);cursor:pointer}
+#brightReset{align-self:flex-start;border:0;background:none;padding:2px 0;font:inherit;font-size:.88em;color:var(--muted);text-decoration:underline;cursor:pointer}
 .check{flex-direction:row!important;align-items:center}
 .check input{width:22px;height:22px;accent-color:var(--leaf)}
 .hint{margin:0;color:var(--muted);font-size:.88em;font-weight:400}
@@ -245,6 +250,11 @@ body.mirror #cam{transform:scaleX(-1)}
     <label for="camSel">الكاميرا
       <select id="camSel"><option value="">الكاميرا الافتراضية</option></select>
     </label>
+    <div class="bright">
+      <div class="bright-head"><label for="brightRange">سطوع صورة الكاميرا</label><output id="brightOut" for="brightRange">١٠٠٪</output></div>
+      <input type="range" id="brightRange" min="50" max="200" step="5" value="100">
+      <button type="button" id="brightReset">إرجاع السطوع الأصلي</button>
+    </div>
     <div>
       <label style="margin-bottom:6px">سرعة الأطعمة في «افتح فمك»</label>
       <div class="seg" id="speedSeg">
@@ -338,6 +348,8 @@ const ROUND = 12;                    // foods per student in «افتح فمك»
 const SPEEDS = { slow: 6.0, normal: 4.4, fast: 3.2 };   // seconds per flight
 const JAW_OPEN = 0.30, JAW_CLOSE = 0.18;               // mouth thresholds (jawOpen blendshape)
 const SIM = new URLSearchParams(location.search).has('sim');
+const BRIGHT_KEY = 'healthy-mirror:cam-brightness';   // camera brightness saved on this board
+let camBright = 1;
 
 const FOODS = [
   { id:'apple',  name:'تفاحة',       def:'التفاح',          kind:'طعام',  healthy:true,  why:'التفاح يمنح أجسامنا الفيتامينات والنشاط.' },
@@ -814,7 +826,9 @@ function track(now){
   let win = lockWin;
   if (!win){ win = scanList[scanIdx % scanList.length]; scanIdx++; }
   if (!win) win = vw >= vh ? { x: 0, y: (vh - vw)/2, s: vw } : { x: (vw - vh)/2, y: 0, s: vh };   // whole frame, letterboxed
-  roiCtx.fillStyle = '#000'; roiCtx.fillRect(0, 0, ROI, ROI);
+  roiCtx.filter = 'none'; roiCtx.fillStyle = '#000'; roiCtx.fillRect(0, 0, ROI, ROI);
+  // the face model sees the picture at the same brightness as the class does
+  roiCtx.filter = camBright === 1 ? 'none' : `brightness(${camBright})`;
   roiCtx.drawImage(video, win.x, win.y, win.s, win.s, 0, 0, ROI, ROI);
   let res; try { res = landmarker.detectForVideo(roiCanvas, now); } catch(e){ return; }
   if (!res?.faceLandmarks?.length){
@@ -1178,6 +1192,17 @@ $('#btnFull').addEventListener('click', () => { const d = document; (d.fullscree
 $('#btnSettings').addEventListener('click', e => { const s = $('#settings'); s.hidden = !s.hidden; e.currentTarget.setAttribute('aria-expanded', !s.hidden); if (!s.hidden) listCameras(); });
 $('#camSel').addEventListener('change', async e => { try { await startCamera(e.target.value); } catch(err){ toast(await explainCameraError(err)); } });
 $('#mirrorChk').addEventListener('change', e => { mirror = e.target.checked; document.body.classList.toggle('mirror', mirror); });
+// camera brightness: kept on this board, so the teacher sets it once per classroom
+function setBright(v, save){
+  camBright = clamp(Math.round(v * 20) / 20, .5, 2);
+  document.documentElement.style.setProperty('--cam-bright', camBright);
+  $('#brightRange').value = Math.round(camBright * 100);
+  $('#brightOut').textContent = ar(Math.round(camBright * 100)) + '٪';
+  if (save) { try { localStorage.setItem(BRIGHT_KEY, String(camBright)); } catch(e){} }
+}
+try { const saved = parseFloat(localStorage.getItem(BRIGHT_KEY)); if (saved) setBright(saved, false); } catch(e){}
+$('#brightRange').addEventListener('input', e => setBright(e.target.value / 100, true));
+$('#brightReset').addEventListener('click', () => setBright(1, true));
 document.querySelectorAll('#speedSeg button').forEach(b => b.addEventListener('click', () => { speed = b.dataset.speed; document.querySelectorAll('#speedSeg button').forEach(x => x.classList.toggle('on', x === b)); }));
 
 /* ================= start ================= */
