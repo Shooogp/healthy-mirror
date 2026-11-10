@@ -685,7 +685,8 @@ async function startCamera(deviceId){
   if (!window.isSecureContext) throw Object.assign(new Error('insecure'), { name:'Insecure' });
   if (!navigator.mediaDevices?.getUserMedia) throw Object.assign(new Error('unsupported'), { name:'Unsupported' });
   stopCamera();
-  const v = { width:{ ideal:1280 }, height:{ ideal:720 } };
+  // full HD keeps enough pixels for a face several steps away from the board
+  const v = { width:{ ideal:1920 }, height:{ ideal:1080 } };
   stream = await navigator.mediaDevices.getUserMedia({ audio:false, video: deviceId ? { ...v, deviceId:{ exact:deviceId } } : { ...v, facingMode:'user' } });
   video.srcObject = stream;
   await video.play();
@@ -739,18 +740,29 @@ function videoToScreen(nx, ny){
 
 /* ================= face tracking ================= */
 let landmarker = null, mpLoading = null, lastVideoTime = -1, lastDetect = 0;
+let mpMake = null, delegateUsed = '', everFound = false, noFaceSince = 0, switching = false;
 async function loadLandmarker(){
   if (landmarker) return landmarker;
   if (!mpLoading) mpLoading = (async () => {
     const { FilesetResolver, FaceLandmarker } = await import(`${MP_URL}/vision_bundle.mjs`);
     const fileset = await FilesetResolver.forVisionTasks(`${MP_URL}/wasm`);
-    const opts = delegate => ({ baseOptions:{ modelAssetPath:FACE_MODEL, delegate }, runningMode:'VIDEO', numFaces:3,
-      outputFaceBlendshapes:true, minFaceDetectionConfidence:.5, minFacePresenceConfidence:.5, minTrackingConfidence:.5 });
-    try { landmarker = await FaceLandmarker.createFromOptions(fileset, opts('GPU')); }
-    catch(e){ landmarker = await FaceLandmarker.createFromOptions(fileset, opts('CPU')); }
+    const opts = delegate => ({ baseOptions:{ modelAssetPath:FACE_MODEL, delegate }, runningMode:'VIDEO', numFaces:2,
+      outputFaceBlendshapes:true, minFaceDetectionConfidence:.45, minFacePresenceConfidence:.5, minTrackingConfidence:.5 });
+    mpMake = delegate => FaceLandmarker.createFromOptions(fileset, opts(delegate));
+    try { landmarker = await mpMake('GPU'); delegateUsed = 'GPU'; }
+    catch(e){ landmarker = await mpMake('CPU'); delegateUsed = 'CPU'; }
     return landmarker;
   })().catch(e => { mpLoading = null; throw e; });
   return mpLoading;
+}
+// Some board graphics drivers load the GPU version but never return a face.
+// If nothing at all has been found after a while on the GPU, rebuild it on the CPU once.
+async function fallBackToCPU(){
+  if (switching || delegateUsed !== 'GPU' || !mpMake) return;
+  switching = true;
+  try { const lm = await mpMake('CPU'); const old = landmarker; landmarker = lm; delegateUsed = 'CPU'; lastVideoTime = -1; try { old?.close(); } catch(e){} }
+  catch(e){ console.warn(e); }
+  switching = false;
 }
 
 const face = { seen:false, lastSeen:-1e9, mouth:{x:0,y:0}, fore:{x:0,y:0}, chin:{x:0,y:0}, width:0, jaw:0, open:false, fresh:true };
@@ -763,16 +775,61 @@ function setFace(m, f, c, wpx, jaw, now){
   else if (face.open && face.jaw < JAW_CLOSE) face.open = false;
   face.seen = true; face.lastSeen = now; face.fresh = false;
 }
+/* The board's camera is wide, so a student standing in front of it has a small face in the frame,
+   too small for the face model, which is made for faces close to a laptop camera. So the model never
+   sees the whole frame shrunk: each detection looks at one square window of it, enlarged. While no
+   face is found the windows take turns — the whole frame, then smaller and smaller squares across the
+   middle — and once a face is found the window follows a square around that face. */
+const ROI = 384;                                      // side of the square the model looks at
+const roiCanvas = document.createElement('canvas'); roiCanvas.width = roiCanvas.height = ROI;
+const roiCtx = roiCanvas.getContext('2d');
+let lockWin = null, lockMiss = 0, scanIdx = 0, scanFor = '';
+let scanList = [];
+function buildScan(vw, vh){
+  // [centre x as a share of the width, centre y as a share of the height, side as a share of the height]
+  const list = [null];                                // null = the whole frame
+  const rows = [
+    [.8,  [.5, .3, .7], [.5]],
+    [.55, [.5, .36, .64, .22, .78], [.45]],
+    [.38, [.5, .4, .6, .3, .7], [.42, .6]],
+    [.27, [.5, .43, .57, .36, .64], [.4, .58]],
+  ];
+  for (const [s, xs, ys] of rows) for (const cy of ys) for (const cx of xs) list.push([cx, cy, s]);
+  scanList = list.map(w => w && toWin(w[0]*vw, w[1]*vh, w[2]*vh, vw, vh));
+  scanFor = vw + 'x' + vh; scanIdx = 0;
+}
+function toWin(cx, cy, side, vw, vh){
+  side = clamp(side, 32, Math.min(vw, vh));
+  return { x: clamp(cx - side/2, 0, vw - side), y: clamp(cy - side/2, 0, vh - side), s: side };
+}
 function track(now){
   if (SIM) return;
-  if (!landmarker || !camReady || video.readyState < 2) return;
+  if (!landmarker || switching || !camReady || video.readyState < 2) return;
   if (video.currentTime === lastVideoTime || now - lastDetect < 40) return;
   lastVideoTime = video.currentTime; lastDetect = now;
-  let res; try { res = landmarker.detectForVideo(video, now); } catch(e){ return; }
-  if (!res?.faceLandmarks?.length) return;
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw || !vh) return;
+  if (scanFor !== vw + 'x' + vh){ buildScan(vw, vh); lockWin = null; }
+  // the window for this detection: around the face once found, otherwise the next one in turn
+  let win = lockWin;
+  if (!win){ win = scanList[scanIdx % scanList.length]; scanIdx++; }
+  if (!win) win = vw >= vh ? { x: 0, y: (vh - vw)/2, s: vw } : { x: (vw - vh)/2, y: 0, s: vh };   // whole frame, letterboxed
+  roiCtx.fillStyle = '#000'; roiCtx.fillRect(0, 0, ROI, ROI);
+  roiCtx.drawImage(video, win.x, win.y, win.s, win.s, 0, 0, ROI, ROI);
+  let res; try { res = landmarker.detectForVideo(roiCanvas, now); } catch(e){ return; }
+  if (!res?.faceLandmarks?.length){
+    if (lockWin && ++lockMiss > 6){ lockWin = null; scanIdx = 0; }
+    if (!everFound){ noFaceSince ||= now; if (now - noFaceSince > 12000) fallBackToCPU(); }
+    return;
+  }
+  everFound = true; lockMiss = 0;
   let best = 0, bw = 0;
   res.faceLandmarks.forEach((lm, i) => { const w = Math.abs(lm[454].x - lm[234].x); if (w > bw){ bw = w; best = i; } });
-  const lm = res.faceLandmarks[best];
+  // landmarks come back as shares of the window; turn them into shares of the camera frame
+  const lm = res.faceLandmarks[best].map(p => ({ x: (win.x + p.x*win.s) / vw, y: (win.y + p.y*win.s) / vh }));
+  // next time, look at a square about three faces wide centred on this face
+  const fw = Math.hypot((lm[454].x - lm[234].x)*vw, (lm[454].y - lm[234].y)*vh);
+  lockWin = toWin((lm[10].x + lm[152].x)/2*vw, (lm[10].y + lm[152].y)/2*vh, fw*3.2, vw, vh);
   const P = i => videoToScreen(lm[i].x, lm[i].y);
   const up = P(13), lo = P(14), l = P(234), r = P(454);
   const jaw = res.faceBlendshapes?.[best]?.categories.find(c => c.categoryName === 'jawOpen')?.score ?? 0;
